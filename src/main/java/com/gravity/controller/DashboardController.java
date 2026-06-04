@@ -75,6 +75,7 @@ public class DashboardController {
             if (i > 0) sb.append(",");
             sb.append("{");
             sb.append("\"id\":").append(dto.getId()).append(",");
+            sb.append("\"partnerId\":").append(dto.getPartnerId()).append(",");
             sb.append("\"rank\":").append(dto.getRank()).append(",");
             sb.append("\"partnerName\":\"").append(escapeJson(dto.getPartnerName())).append("\",");
             sb.append("\"partnerZodiac\":\"").append(escapeJson(dto.getPartnerZodiac())).append("\",");
