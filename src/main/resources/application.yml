@@ -1,0 +1,46 @@
+spring:
+  datasource:
+    url: "${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/gravity_db?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}"
+    username: ${SPRING_DATASOURCE_USERNAME:gravity}
+    password: ${SPRING_DATASOURCE_PASSWORD:1234}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  thymeleaf:
+    cache: false
+    encoding: UTF-8
+
+  web:
+    resources:
+      cache:
+        period: 0
+
+server:
+  port: ${PORT:8080}
+
+claude:
+  api:
+    key: ${CLAUDE_API_KEY:dummy_key}
+    url: https://api.anthropic.com/v1/messages
+    model: claude-sonnet-4-6
+
+toss:
+  payments:
+    client-key: ${TOSS_CLIENT_KEY:test_ck_GjLJoQ1aVZYEBxBL4pnJ3w6KYe2R}
+    secret-key: ${TOSS_SECRET_KEY:test_sk_eqRGgYO1r5K0WEqzBRQ53QnN2Eya}
+    api-url: https://api.tosspayments.com/v1
+
+app:
+  upload:
+    path: ${APP_UPLOAD_PATH:/tmp/gravity-uploads/}
+
+logging:
+  level:
+    com.gravity: INFO
