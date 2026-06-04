@@ -358,17 +358,18 @@ function render() {
             ctx.fillText(p.score + '점', p.x, p.y);
         }
 
-        // 온라인 표시 (초록 점)
-        if (onlinePartnerIds.has(p.partnerId)) {
-            const dotR = Math.max(4, radius * 0.28);
+        // 온라인 표시 (인스타그램 스타일 녹색 링)
+        if (onlinePartnerIds.has(Number(p.partnerId))) {
             ctx.beginPath();
-            ctx.arc(p.x + radius * 0.7, p.y - radius * 0.7, dotR, 0, Math.PI * 2);
-            ctx.fillStyle = '#22C55E';
-            ctx.fill();
+            ctx.arc(p.x, p.y, radius + 5, 0, Math.PI * 2);
+            ctx.strokeStyle = '#22C55E';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            // 글로우
             ctx.beginPath();
-            ctx.arc(p.x + radius * 0.7, p.y - radius * 0.7, dotR + 2, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(34,197,94,0.4)';
-            ctx.lineWidth = 2;
+            ctx.arc(p.x, p.y, radius + 7, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(34,197,94,0.3)';
+            ctx.lineWidth = 5;
             ctx.stroke();
         }
 
@@ -773,7 +774,10 @@ function drawSpeechBubbles() {
 function pollOnlineStatus() {
     fetch('/api/chat/online')
         .then(r => r.json())
-        .then(ids => { onlinePartnerIds = new Set(ids.map(Number)); });
+        .then(ids => {
+            onlinePartnerIds = new Set(ids.map(Number));
+            console.log('온라인 파트너:', ids);
+        });
 }
 pollOnlineStatus();
 setInterval(pollOnlineStatus, 30000);
