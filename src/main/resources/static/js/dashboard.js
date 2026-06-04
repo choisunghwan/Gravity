@@ -631,6 +631,7 @@ function sendChatMessage() {
         const box = document.getElementById('chatMessages');
         box.scrollTop = box.scrollHeight;
         lastMessageTime = new Date().toISOString().slice(0, 19);
+        triggerSpeechBubble(currentPartnerId, msg);
     });
 }
 
@@ -689,10 +690,11 @@ function updateBadge() {
 
 // ── 말풍선 (canvas) ─────────────────────────────────────────────────
 function triggerSpeechBubble(senderId, message) {
-    const planet = planets.find(p => p.partnerId === senderId || p.id === senderId);
+    const id = Number(senderId);
+    const planet = planets.find(p => Number(p.partnerId) === id || Number(p.id) === id);
     if (!planet) return;
     speechBubbles.push({
-        x: planet.x, y: planet.y,
+        planetRef: planet,
         message: message.length > 20 ? message.slice(0, 20) + '…' : message,
         alpha: 1.0,
         createdAt: Date.now()
@@ -707,8 +709,8 @@ function drawSpeechBubbles() {
         if (age > 4000) { speechBubbles.splice(i, 1); continue; }
         b.alpha = age < 3000 ? 1 : 1 - (age - 3000) / 1000;
 
-        const bx = b.x + 20;
-        const by = b.y - 50;
+        const bx = b.planetRef.x + 20;
+        const by = b.planetRef.y - 55;
         const pad = 10;
         ctx.font = `13px 'Noto Sans KR', sans-serif`;
         const tw = ctx.measureText(b.message).width;
