@@ -38,9 +38,13 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "last_active_at")
+    private LocalDateTime lastActiveAt;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.lastActiveAt = LocalDateTime.now();
     }
 
     public int getBirthYear() {

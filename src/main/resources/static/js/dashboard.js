@@ -15,6 +15,7 @@ let lastMessageTime = new Date().toISOString().slice(0, 19);
 let pollInterval = null;
 let unreadCount = 0;
 const speechBubbles = [];
+let onlinePartnerIds = new Set();
 
 // ── 태양계 궤도 링 + 태양 ──────────────────────────────────────────
 const ORBIT_RINGS = [
@@ -355,6 +356,20 @@ function render() {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(p.score + '점', p.x, p.y);
+        }
+
+        // 온라인 표시 (초록 점)
+        if (onlinePartnerIds.has(p.partnerId)) {
+            const dotR = Math.max(4, radius * 0.28);
+            ctx.beginPath();
+            ctx.arc(p.x + radius * 0.7, p.y - radius * 0.7, dotR, 0, Math.PI * 2);
+            ctx.fillStyle = '#22C55E';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(p.x + radius * 0.7, p.y - radius * 0.7, dotR + 2, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(34,197,94,0.4)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
         }
 
         // 이름 라벨
@@ -753,6 +768,15 @@ function drawSpeechBubbles() {
         ctx.restore();
     }
 }
+
+// 온라인 상태 폴링 (30초마다)
+function pollOnlineStatus() {
+    fetch('/api/chat/online')
+        .then(r => r.json())
+        .then(ids => { onlinePartnerIds = new Set(ids.map(Number)); });
+}
+pollOnlineStatus();
+setInterval(pollOnlineStatus, 30000);
 
 // 전역 노출
 window.toggleChat    = toggleChat;
