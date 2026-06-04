@@ -7,6 +7,15 @@ let stars = [];
 let animFrame;
 const imageCache = {};
 
+// 채팅 관련 변수 (render보다 먼저 선언)
+let chatOpen = false;
+let currentPartnerId = null;
+let currentPartnerName = null;
+let lastMessageTime = new Date().toISOString().slice(0, 19);
+let pollInterval = null;
+let unreadCount = 0;
+const speechBubbles = [];
+
 // ── 태양계 궤도 링 + 태양 ──────────────────────────────────────────
 const ORBIT_RINGS = [
     { name: '수성',   orbit: 140,  color: '#A0A0A0', dotColor: '#B0B0B0', dotSize: 4,  angle: 0.8 },
@@ -563,13 +572,6 @@ const newId = params.get('new');
 if (newId) setTimeout(() => showDetail(parseInt(newId)), 800);
 
 // ── 채팅 ────────────────────────────────────────────────────────────
-let chatOpen = false;
-let currentPartnerId = null;
-let currentPartnerName = null;
-let lastMessageTime = new Date().toISOString().slice(0, 19);
-let pollInterval = null;
-let unreadCount = 0;
-const speechBubbles = [];
 
 function toggleChat() {
     chatOpen = !chatOpen;
