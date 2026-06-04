@@ -157,7 +157,7 @@
             <div th:each="c : ${compatibilities}" class="chat-partner-item"
                  th:data-partner-id="${c.partnerId}"
                  th:data-partner-name="${c.partnerName}"
-                 th:onclick="'openChat(' + ${c.partnerId} + ', \'' + ${c.partnerName} + '\')'">
+                 onclick="openChat(+this.dataset.partnerId, this.dataset.partnerName)">
                 <span class="chat-partner-dot" th:style="'background:' + ${c.planetColor}"></span>
                 <span th:text="${c.partnerName}">이름</span>
             </div>
