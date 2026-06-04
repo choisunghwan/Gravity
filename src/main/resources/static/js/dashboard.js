@@ -125,7 +125,7 @@ function spawnShootingStar() {
         x: side === 'top' ? Math.random() * canvas.width : 0,
         y: side === 'top' ? 0 : Math.random() * canvas.height * 0.5,
         len: Math.random() * 120 + 60,
-        speed: Math.random() * 8 + 6,
+        speed: Math.random() * 4 + 3,
         alpha: 1,
         angle: Math.PI / 4 + (Math.random() - 0.5) * 0.4,
         width: Math.random() * 1.5 + 0.5
@@ -420,16 +420,19 @@ function lightenColor(hex, amount) {
 }
 
 // ── 이모지 파티클 ──────────────────────────────────────────────────
-function triggerEmojiParticle(partnerId, emoji) {
+function triggerEmojiParticle(partnerId, emoji, incoming = false) {
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
     const planet = planets.find(p => Number(p.partnerId) === Number(partnerId));
     if (!planet) return;
+    const startX = incoming ? planet.x : cx;
+    const startY = incoming ? planet.y : cy;
+    const endX   = incoming ? cx : planet.x;
+    const endY   = incoming ? cy : planet.y;
     emojiParticles.push({
-        startX: cx, startY: cy,
-        endX: planet.x, endY: planet.y,
-        cpX: (cx + planet.x) / 2 + (Math.random() - 0.5) * 80,
-        cpY: Math.min(cy, planet.y) - 120,
+        startX, startY, endX, endY,
+        cpX: (startX + endX) / 2 + (Math.random() - 0.5) * 80,
+        cpY: Math.min(startY, endY) - 120,
         progress: 0,
         emoji: emoji
     });
@@ -745,14 +748,14 @@ function pollNewMessages() {
             if (!msgs.length) return;
             lastMessageTime = new Date().toISOString().slice(0, 19);
             msgs.forEach(m => {
-                // 말풍선 띄우기
+                // 상대 행성 → 내 지구로 이모지 날아오기
+                triggerEmojiParticle(m.senderId, extractEmoji(m.message), true);
                 triggerSpeechBubble(m.senderId, m.message);
-                // 현재 채팅방에 있으면 메시지 추가
                 if (currentPartnerId && m.senderId === currentPartnerId) {
                     appendMessage(m);
                     const box = document.getElementById('chatMessages');
                     box.scrollTop = box.scrollHeight;
-                } else if (!chatOpen || m.senderId !== currentPartnerId) {
+                } else {
                     unreadCount++;
                     updateBadge();
                 }
