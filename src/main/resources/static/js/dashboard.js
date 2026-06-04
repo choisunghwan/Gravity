@@ -24,6 +24,14 @@ const emojiParticles = [];
 let activeWishes = [];
 let wishShownIds = new Set();
 
+// 이스터에그
+const supernovaEffects = [];
+let bigBangActive = false;
+let bigBangParticles = [];
+let bigBangPhase = 0;
+let bigBangTimer = 0;
+let originalPlanetPositions = [];
+
 // ── 태양계 궤도 링 + 태양 ──────────────────────────────────────────
 const ORBIT_RINGS = [
     { name: '수성',   orbit: 140,  color: '#A0A0A0', dotColor: '#B0B0B0', dotSize: 4,  angle: 0.8 },
@@ -992,12 +1000,6 @@ function triggerSupernovaOnPlanet(senderId) {
 }
 
 // ── 이스터에그 ──────────────────────────────────────────────────────
-let bigBangActive = false;
-let bigBangParticles = [];
-let bigBangPhase = 0;
-const supernovaEffects = [];
-let bigBangTimer = 0;
-let originalPlanetPositions = [];
 
 function triggerBigBang() {
     if (bigBangActive) return;
