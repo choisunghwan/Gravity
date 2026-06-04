@@ -17,6 +17,13 @@ let unreadCount = 0;
 const speechBubbles = [];
 let onlinePartnerIds = new Set();
 
+// 이모지 파티클
+const emojiParticles = [];
+
+// 별똥별 소원
+let activeWishes = [];
+let wishShownIds = new Set();
+
 // ── 태양계 궤도 링 + 태양 ──────────────────────────────────────────
 const ORBIT_RINGS = [
     { name: '수성',   orbit: 140,  color: '#A0A0A0', dotColor: '#B0B0B0', dotSize: 4,  angle: 0.8 },
@@ -158,6 +165,20 @@ function drawShootingStars() {
         ctx.arc(s.x, s.y, s.width * 1.5, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,255,255,${s.alpha * 0.9})`;
         ctx.fill();
+
+        // 소원 텍스트
+        if (s.wish) {
+            ctx.save();
+            ctx.globalAlpha = s.alpha * 0.9;
+            ctx.fillStyle = 'rgba(255,230,150,1)';
+            ctx.font = `bold 13px 'Noto Sans KR', sans-serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(255,200,50,0.8)';
+            ctx.shadowBlur = 6;
+            ctx.fillText(s.wish, s.x + 8, s.y - 8);
+            ctx.restore();
+        }
 
         s.x += Math.cos(s.angle) * s.speed;
         s.y += Math.sin(s.angle) * s.speed;
@@ -384,6 +405,9 @@ function render() {
     // 말풍선 그리기
     drawSpeechBubbles();
 
+    // 이모지 파티클
+    drawEmojiParticles();
+
     animFrame = requestAnimationFrame(render);
 }
 
@@ -393,6 +417,47 @@ function lightenColor(hex, amount) {
     const g = Math.min(255, ((num >> 8) & 0xff) + amount);
     const b = Math.min(255, (num & 0xff) + amount);
     return `rgb(${r},${g},${b})`;
+}
+
+// ── 이모지 파티클 ──────────────────────────────────────────────────
+function triggerEmojiParticle(partnerId, emoji) {
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const planet = planets.find(p => Number(p.partnerId) === Number(partnerId));
+    if (!planet) return;
+    emojiParticles.push({
+        startX: cx, startY: cy,
+        endX: planet.x, endY: planet.y,
+        cpX: (cx + planet.x) / 2 + (Math.random() - 0.5) * 80,
+        cpY: Math.min(cy, planet.y) - 120,
+        progress: 0,
+        emoji: emoji
+    });
+}
+
+function drawEmojiParticles() {
+    for (let i = emojiParticles.length - 1; i >= 0; i--) {
+        const p = emojiParticles[i];
+        p.progress += 0.018;
+        if (p.progress >= 1) { emojiParticles.splice(i, 1); continue; }
+        const t = p.progress;
+        const x = (1-t)*(1-t)*p.startX + 2*(1-t)*t*p.cpX + t*t*p.endX;
+        const y = (1-t)*(1-t)*p.startY + 2*(1-t)*t*p.cpY + t*t*p.endY;
+        const alpha = t < 0.8 ? 1 : 1 - (t - 0.8) / 0.2;
+        const scale = 1 + Math.sin(t * Math.PI) * 0.6;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.font = `${26 * scale}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.emoji, x, y);
+        ctx.restore();
+    }
+}
+
+function extractEmoji(msg) {
+    const match = msg.match(/\p{Emoji_Presentation}|\p{Emoji}️/gu);
+    return match ? match[0] : '✉️';
 }
 
 // ── 마우스 이벤트 ──────────────────────────────────────────────────
@@ -648,6 +713,7 @@ function sendChatMessage() {
         box.scrollTop = box.scrollHeight;
         lastMessageTime = new Date().toISOString().slice(0, 19);
         triggerSpeechBubble(currentPartnerId, msg);
+        triggerEmojiParticle(currentPartnerId, extractEmoji(msg));
     });
 }
 
@@ -769,6 +835,96 @@ function drawSpeechBubbles() {
         ctx.restore();
     }
 }
+
+// ── 별똥별 소원 ────────────────────────────────────────────────────
+canvas.addEventListener('click', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    shootingStars.forEach(s => {
+        if (Math.hypot(mx - s.x, my - s.y) < 20 && s.alpha > 0.3) {
+            showWishInput();
+        }
+    });
+}, true);
+
+function showWishInput() {
+    const existing = document.getElementById('wishInputBox');
+    if (existing) return;
+    const box = document.createElement('div');
+    box.id = 'wishInputBox';
+    box.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+        background:rgba(10,10,35,0.95);border:1px solid rgba(255,230,100,0.4);
+        border-radius:16px;padding:20px 24px;z-index:999;text-align:center;
+        box-shadow:0 0 30px rgba(255,200,50,0.2);min-width:280px`;
+    box.innerHTML = `
+        <div style="font-size:24px;margin-bottom:8px">🌠</div>
+        <div style="color:#FFE08A;font-size:14px;margin-bottom:12px;font-weight:600">별똥별에 소원을 빌어요</div>
+        <input id="wishText" maxlength="30" placeholder="소원을 입력하세요..."
+            style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,230,100,0.3);
+            border-radius:8px;padding:8px 12px;color:white;font-size:13px;outline:none;
+            font-family:'Noto Sans KR',sans-serif;box-sizing:border-box">
+        <div style="display:flex;gap:8px;margin-top:12px">
+            <button onclick="submitWish()" style="flex:1;background:linear-gradient(135deg,#F59E0B,#FBBF24);
+                border:none;border-radius:8px;padding:8px;color:white;font-weight:700;cursor:pointer;font-size:13px">빌기 ✨</button>
+            <button onclick="document.getElementById('wishInputBox').remove()" style="flex:1;background:rgba(255,255,255,0.1);
+                border:none;border-radius:8px;padding:8px;color:#94A3B8;cursor:pointer;font-size:13px">취소</button>
+        </div>`;
+    document.body.appendChild(box);
+    document.getElementById('wishText').focus();
+    document.getElementById('wishText').addEventListener('keydown', ev => {
+        if (ev.key === 'Enter') submitWish();
+    });
+}
+
+function submitWish() {
+    const text = document.getElementById('wishText')?.value?.trim();
+    if (!text) return;
+    document.getElementById('wishInputBox')?.remove();
+    fetch('/api/wish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+    }).then(() => {
+        // 즉시 내 화면에도 별똥별 생성
+        spawnWishStar(text);
+        showToast('🌠 소원이 하늘로 날아갔어요!');
+    });
+}
+
+function spawnWishStar(text) {
+    const star = {
+        x: 0,
+        y: Math.random() * canvas.height * 0.4,
+        len: Math.random() * 120 + 80,
+        speed: Math.random() * 6 + 5,
+        alpha: 1,
+        angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
+        width: 2,
+        wish: text
+    };
+    shootingStars.push(star);
+}
+
+function pollWishes() {
+    fetch('/api/wish/active')
+        .then(r => r.json())
+        .then(wishes => {
+            wishes.forEach(w => {
+                const key = w.userName + w.text;
+                if (!wishShownIds.has(key)) {
+                    wishShownIds.add(key);
+                    spawnWishStar(`${w.userName}: ${w.text}`);
+                    setTimeout(() => wishShownIds.delete(key), 30000);
+                }
+            });
+        });
+}
+pollWishes();
+setInterval(pollWishes, 5000);
+
+window.submitWish = submitWish;
+window.showWishInput = showWishInput;
 
 // 온라인 상태 폴링 (30초마다)
 function pollOnlineStatus() {
