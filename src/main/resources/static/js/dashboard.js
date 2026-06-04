@@ -213,6 +213,7 @@ function initPlanets() {
         const angle = (2 * Math.PI / compatibilities.length) * i - Math.PI / 2;
         const p = {
             id: c.id,
+            partnerId: c.partnerId,
             name: c.partnerName,
             rank: c.rank,
             score: c.score,
@@ -354,6 +355,9 @@ function render() {
         ctx.textBaseline = 'top';
         ctx.fillText(p.name, p.x, p.y + radius + 4);
     });
+
+    // 말풍선 그리기
+    drawSpeechBubbles();
 
     animFrame = requestAnimationFrame(render);
 }
@@ -557,3 +561,200 @@ scheduleShootingStar();
 const params = new URLSearchParams(window.location.search);
 const newId = params.get('new');
 if (newId) setTimeout(() => showDetail(parseInt(newId)), 800);
+
+// ── 채팅 ────────────────────────────────────────────────────────────
+let chatOpen = false;
+let currentPartnerId = null;
+let currentPartnerName = null;
+let lastMessageTime = new Date().toISOString().slice(0, 19);
+let pollInterval = null;
+let unreadCount = 0;
+const speechBubbles = [];
+
+function toggleChat() {
+    chatOpen = !chatOpen;
+    const body = document.getElementById('chatBody');
+    const btn  = document.getElementById('chatToggleBtn');
+    body.style.display = chatOpen ? 'flex' : 'none';
+    btn.textContent = chatOpen ? '∨' : '∧';
+    if (chatOpen) { unreadCount = 0; updateBadge(); }
+}
+
+function openChat(partnerId, partnerName) {
+    currentPartnerId = partnerId;
+    currentPartnerName = partnerName;
+    document.getElementById('chatPartners').style.display = 'none';
+    document.getElementById('chatRoom').style.display    = 'flex';
+    document.getElementById('chatRoomTitle').textContent = partnerName;
+    document.getElementById('chatTitle').textContent     = partnerName;
+    document.getElementById('chatMessages').innerHTML    = '';
+    loadMessages();
+    startPolling();
+}
+
+function backToPartners() {
+    currentPartnerId = null;
+    document.getElementById('chatPartners').style.display = 'block';
+    document.getElementById('chatRoom').style.display    = 'none';
+    document.getElementById('chatTitle').textContent     = '채팅';
+    stopPolling();
+}
+
+function loadMessages() {
+    if (!currentPartnerId) return;
+    fetch(`/api/chat/${currentPartnerId}`)
+        .then(r => r.json())
+        .then(msgs => {
+            const box = document.getElementById('chatMessages');
+            box.innerHTML = '';
+            msgs.forEach(m => appendMessage(m));
+            box.scrollTop = box.scrollHeight;
+            if (msgs.length > 0) lastMessageTime = new Date().toISOString().slice(0, 19);
+        });
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg || !currentPartnerId) return;
+    input.value = '';
+    fetch(`/api/chat/${currentPartnerId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+    })
+    .then(r => r.json())
+    .then(m => {
+        appendMessage(m);
+        const box = document.getElementById('chatMessages');
+        box.scrollTop = box.scrollHeight;
+        lastMessageTime = new Date().toISOString().slice(0, 19);
+    });
+}
+
+function appendMessage(m) {
+    const box = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (m.mine ? 'chat-msg-mine' : 'chat-msg-other');
+    div.innerHTML = `<span class="chat-bubble">${escapeHtml(m.message)}</span><span class="chat-time">${m.createdAt}</span>`;
+    box.appendChild(div);
+}
+
+function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function startPolling() {
+    stopPolling();
+    pollInterval = setInterval(pollNewMessages, 3000);
+}
+
+function stopPolling() {
+    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+}
+
+function pollNewMessages() {
+    fetch(`/api/chat/new?since=${encodeURIComponent(lastMessageTime)}`)
+        .then(r => r.json())
+        .then(msgs => {
+            if (!msgs.length) return;
+            lastMessageTime = new Date().toISOString().slice(0, 19);
+            msgs.forEach(m => {
+                // 말풍선 띄우기
+                triggerSpeechBubble(m.senderId, m.message);
+                // 현재 채팅방에 있으면 메시지 추가
+                if (currentPartnerId && m.senderId === currentPartnerId) {
+                    appendMessage(m);
+                    const box = document.getElementById('chatMessages');
+                    box.scrollTop = box.scrollHeight;
+                } else if (!chatOpen || m.senderId !== currentPartnerId) {
+                    unreadCount++;
+                    updateBadge();
+                }
+            });
+        });
+}
+
+function updateBadge() {
+    const badge = document.getElementById('chatBadge');
+    if (unreadCount > 0) {
+        badge.style.display = 'inline-block';
+        badge.textContent = unreadCount;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// ── 말풍선 (canvas) ─────────────────────────────────────────────────
+function triggerSpeechBubble(senderId, message) {
+    const planet = planets.find(p => p.partnerId === senderId || p.id === senderId);
+    if (!planet) return;
+    speechBubbles.push({
+        x: planet.x, y: planet.y,
+        message: message.length > 20 ? message.slice(0, 20) + '…' : message,
+        alpha: 1.0,
+        createdAt: Date.now()
+    });
+}
+
+function drawSpeechBubbles() {
+    const now = Date.now();
+    for (let i = speechBubbles.length - 1; i >= 0; i--) {
+        const b = speechBubbles[i];
+        const age = now - b.createdAt;
+        if (age > 4000) { speechBubbles.splice(i, 1); continue; }
+        b.alpha = age < 3000 ? 1 : 1 - (age - 3000) / 1000;
+
+        const bx = b.x + 20;
+        const by = b.y - 50;
+        const pad = 10;
+        ctx.font = `13px 'Noto Sans KR', sans-serif`;
+        const tw = ctx.measureText(b.message).width;
+        const bw = tw + pad * 2;
+        const bh = 30;
+
+        ctx.save();
+        ctx.globalAlpha = b.alpha;
+
+        // 말풍선 배경
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, 8);
+        ctx.fill();
+
+        // 꼬리
+        ctx.beginPath();
+        ctx.moveTo(bx + 10, by + bh);
+        ctx.lineTo(bx + 2, by + bh + 8);
+        ctx.lineTo(bx + 18, by + bh);
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.fill();
+
+        // 텍스트
+        ctx.fillStyle = '#1e1e3f';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(b.message, bx + pad, by + bh / 2);
+
+        ctx.restore();
+    }
+}
+
+// 전역 노출
+window.toggleChat    = toggleChat;
+window.openChat      = openChat;
+window.backToPartners = backToPartners;
+window.sendChatMessage = sendChatMessage;
+
+// 백그라운드에서도 새 메시지 polling
+setInterval(() => {
+    if (!currentPartnerId) {
+        fetch(`/api/chat/new?since=${encodeURIComponent(lastMessageTime)}`)
+            .then(r => r.json())
+            .then(msgs => {
+                if (!msgs.length) return;
+                lastMessageTime = new Date().toISOString().slice(0, 19);
+                msgs.forEach(m => { triggerSpeechBubble(m.senderId, m.message); unreadCount++; updateBadge(); });
+            });
+    }
+}, 5000);

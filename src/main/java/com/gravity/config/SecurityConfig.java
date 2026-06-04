@@ -48,7 +48,7 @@ public class SecurityConfig {
             )
             .userDetailsService(userDetailsService)
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/payment/**")
+                .ignoringRequestMatchers("/payment/**", "/api/chat/**")
             );
 
         return http.build();

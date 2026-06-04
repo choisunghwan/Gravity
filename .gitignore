@@ -1,6 +1,3 @@
-# 민감한 설정 파일 (API 키, DB 비밀번호 포함)
-src/main/resources/application.yml
-
 # 빌드 결과물
 target/
 *.jar
