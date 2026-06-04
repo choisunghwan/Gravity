@@ -719,7 +719,17 @@ function drawSpeechBubbles() {
         // 말풍선 배경
         ctx.fillStyle = 'rgba(255,255,255,0.95)';
         ctx.beginPath();
-        ctx.roundRect(bx, by, bw, bh, 8);
+        const r = 8;
+        ctx.moveTo(bx + r, by);
+        ctx.lineTo(bx + bw - r, by);
+        ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+        ctx.lineTo(bx + bw, by + bh - r);
+        ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+        ctx.lineTo(bx + r, by + bh);
+        ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+        ctx.lineTo(bx, by + r);
+        ctx.quadraticCurveTo(bx, by, bx + r, by);
+        ctx.closePath();
         ctx.fill();
 
         // 꼬리
