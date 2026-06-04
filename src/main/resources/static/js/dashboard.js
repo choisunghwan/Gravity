@@ -704,6 +704,10 @@ function sendChatMessage() {
     const msg = input.value.trim();
     if (!msg || !currentPartnerId) return;
     input.value = '';
+
+    // 이스터에그
+    if (msg === '/bigbang') { triggerBigBang(); return; }
+    if (msg === '/supernova') { triggerSupernova(); return; }
     fetch(`/api/chat/${currentPartnerId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -940,6 +944,150 @@ function pollOnlineStatus() {
 }
 pollOnlineStatus();
 setInterval(pollOnlineStatus, 30000);
+
+// ── 이스터에그 ──────────────────────────────────────────────────────
+let bigBangActive = false;
+let bigBangParticles = [];
+let bigBangPhase = 0;
+let bigBangTimer = 0;
+let originalPlanetPositions = [];
+
+function triggerBigBang() {
+    if (bigBangActive) return;
+    bigBangActive = true;
+    bigBangPhase = 0;
+    bigBangTimer = 0;
+    bigBangParticles = [];
+    showToast('💥 BIGBANG!!!');
+
+    // 원래 행성 위치 저장
+    originalPlanetPositions = planets.map(p => ({
+        angle: p.angle, baseOrbit: p.baseOrbit
+    }));
+
+    // 파티클 생성
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    for (let i = 0; i < 120; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 18 + 6;
+        const colors = ['#FF6B6B','#FFE66D','#4ECDC4','#A78BFA','#F9A8C9','#7DD3FC','#FFA500','#FF69B4'];
+        bigBangParticles.push({
+            x: cx, y: cy,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            alpha: 1,
+            size: Math.random() * 5 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)]
+        });
+    }
+
+    // 행성 폭발적으로 날리기
+    planets.forEach(p => {
+        const angle = Math.atan2(p.y - cy, p.x - cx);
+        p._bbVx = Math.cos(angle) * 25;
+        p._bbVy = Math.sin(angle) * 25;
+        p._bbPhase = 'explode';
+    });
+
+    runBigBang();
+}
+
+function runBigBang() {
+    if (!bigBangActive) return;
+    bigBangTimer++;
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    // 페이즈 1 (0~60): 폭발
+    if (bigBangTimer < 60) {
+        planets.forEach(p => {
+            if (p._bbPhase === 'explode') {
+                p.x += p._bbVx;
+                p.y += p._bbVy;
+                p._bbVx *= 0.95;
+                p._bbVy *= 0.95;
+            }
+        });
+        bigBangParticles.forEach(pt => {
+            pt.x += pt.vx;
+            pt.y += pt.vy;
+            pt.vx *= 0.96;
+            pt.vy *= 0.96;
+            pt.alpha -= 0.015;
+        });
+    }
+
+    // 페이즈 2 (60~120): 수축 (원래 위치로)
+    if (bigBangTimer >= 60 && bigBangTimer < 140) {
+        planets.forEach((p, i) => {
+            const orig = originalPlanetPositions[i];
+            const targetX = cx + orig.baseOrbit * systemScale * Math.cos(orig.angle);
+            const targetY = cy + orig.baseOrbit * systemScale * Math.sin(orig.angle);
+            p.x += (targetX - p.x) * 0.08;
+            p.y += (targetY - p.y) * 0.08;
+        });
+    }
+
+    // 종료
+    if (bigBangTimer >= 160) {
+        bigBangActive = false;
+        bigBangParticles = [];
+        planets.forEach(p => { delete p._bbVx; delete p._bbVy; delete p._bbPhase; });
+        return;
+    }
+
+    // 파티클 canvas에 그리기
+    bigBangParticles.filter(pt => pt.alpha > 0).forEach(pt => {
+        ctx.save();
+        ctx.globalAlpha = pt.alpha;
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+
+    // 중심 플래시
+    if (bigBangTimer < 20) {
+        const flashAlpha = (20 - bigBangTimer) / 20 * 0.7;
+        ctx.save();
+        ctx.globalAlpha = flashAlpha;
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+    }
+
+    requestAnimationFrame(runBigBang);
+}
+
+function triggerSupernova() {
+    showToast('🌟 SUPERNOVA!');
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    let frame = 0;
+
+    function animate() {
+        frame++;
+        if (frame > 80) return;
+        const radius = frame * 12;
+        const alpha = Math.max(0, 1 - frame / 80);
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        grad.addColorStop(0, 'rgba(255,255,200,0.9)');
+        grad.addColorStop(0.3, 'rgba(255,150,50,0.6)');
+        grad.addColorStop(1, 'rgba(255,50,50,0)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.restore();
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
 
 // 전역 노출
 window.toggleChat    = toggleChat;
