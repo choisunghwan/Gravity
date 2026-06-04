@@ -322,9 +322,11 @@ function render() {
     // 행성
     planets.forEach(p => {
         const orbit = p.baseOrbit * systemScale;
-        p.angle += p.speed;
-        p.x = cx + orbit * Math.cos(p.angle);
-        p.y = cy + orbit * Math.sin(p.angle);
+        if (!bigBangActive) {
+            p.angle += p.speed;
+            p.x = cx + orbit * Math.cos(p.angle);
+            p.y = cy + orbit * Math.sin(p.angle);
+        }
 
         const radius = (p.hovered ? p.size * 1.3 : p.size) * Math.max(0.5, systemScale);
 
@@ -410,6 +412,9 @@ function render() {
 
     // 빅뱅
     if (bigBangActive) updateBigBang(cx, cy);
+
+    // 수퍼노바
+    drawSupernovaEffects();
 
     animFrame = requestAnimationFrame(render);
 }
@@ -981,34 +986,16 @@ setInterval(pollEffects, 3000);
 
 function triggerSupernovaOnPlanet(senderId) {
     const planet = planets.find(p => Number(p.partnerId) === Number(senderId));
-    if (!planet) { triggerSupernova(); return; }
-    let frame = 0;
-    const px = planet.x, py = planet.y;
-    function animate() {
-        frame++;
-        if (frame > 80) return;
-        const radius = frame * 10;
-        const alpha = Math.max(0, 1 - frame / 80);
-        ctx.save();
-        ctx.globalAlpha = alpha * 0.6;
-        const grad = ctx.createRadialGradient(px, py, 0, px, py, radius);
-        grad.addColorStop(0, 'rgba(255,255,200,0.9)');
-        grad.addColorStop(0.3, 'rgba(255,150,50,0.6)');
-        grad.addColorStop(1, 'rgba(255,50,50,0)');
-        ctx.beginPath();
-        ctx.arc(px, py, radius, 0, Math.PI * 2);
-        ctx.fillStyle = grad;
-        ctx.fill();
-        ctx.restore();
-        requestAnimationFrame(animate);
-    }
-    animate();
+    const x = planet ? planet.x : canvas.width / 2;
+    const y = planet ? planet.y : canvas.height / 2;
+    supernovaEffects.push({ x, y, frame: 0, maxFrame: 80, scale: 10 });
 }
 
 // ── 이스터에그 ──────────────────────────────────────────────────────
 let bigBangActive = false;
 let bigBangParticles = [];
 let bigBangPhase = 0;
+const supernovaEffects = [];
 let bigBangTimer = 0;
 let originalPlanetPositions = [];
 
@@ -1112,29 +1099,28 @@ function updateBigBang(cx, cy) {
 
 function triggerSupernova() {
     showToast('🌟 SUPERNOVA!');
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    let frame = 0;
+    supernovaEffects.push({ x: canvas.width / 2, y: canvas.height / 2, frame: 0, maxFrame: 80, scale: 12 });
+}
 
-    function animate() {
-        frame++;
-        if (frame > 80) return;
-        const radius = frame * 12;
-        const alpha = Math.max(0, 1 - frame / 80);
+function drawSupernovaEffects() {
+    for (let i = supernovaEffects.length - 1; i >= 0; i--) {
+        const s = supernovaEffects[i];
+        s.frame++;
+        if (s.frame > s.maxFrame) { supernovaEffects.splice(i, 1); continue; }
+        const radius = s.frame * s.scale;
+        const alpha = Math.max(0, 1 - s.frame / s.maxFrame);
         ctx.save();
-        ctx.globalAlpha = alpha * 0.5;
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        ctx.globalAlpha = alpha * 0.6;
+        const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, radius);
         grad.addColorStop(0, 'rgba(255,255,200,0.9)');
         grad.addColorStop(0.3, 'rgba(255,150,50,0.6)');
         grad.addColorStop(1, 'rgba(255,50,50,0)');
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
         ctx.fillStyle = grad;
         ctx.fill();
         ctx.restore();
-        requestAnimationFrame(animate);
     }
-    animate();
 }
 
 // 전역 노출
