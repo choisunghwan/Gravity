@@ -408,6 +408,9 @@ function render() {
     // 이모지 파티클
     drawEmojiParticles();
 
+    // 빅뱅
+    if (bigBangActive) updateBigBang(cx, cy);
+
     animFrame = requestAnimationFrame(render);
 }
 
@@ -702,12 +705,22 @@ function loadMessages() {
 function sendChatMessage() {
     const input = document.getElementById('chatInput');
     const msg = input.value.trim();
-    if (!msg || !currentPartnerId) return;
+    if (!msg) return;
     input.value = '';
 
     // 이스터에그
-    if (msg === '/bigbang') { triggerBigBang(); return; }
-    if (msg === '/supernova') { triggerSupernova(); return; }
+    if (msg === '/bigbang') {
+        triggerBigBang();
+        if (currentPartnerId) sendEffect('BIGBANG', currentPartnerId);
+        return;
+    }
+    if (msg === '/supernova') {
+        triggerSupernova();
+        if (currentPartnerId) sendEffect('SUPERNOVA', currentPartnerId);
+        return;
+    }
+
+    if (!currentPartnerId) return;
     fetch(`/api/chat/${currentPartnerId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -945,6 +958,53 @@ function pollOnlineStatus() {
 pollOnlineStatus();
 setInterval(pollOnlineStatus, 30000);
 
+// 특수 효과 폴링
+function sendEffect(type, receiverId) {
+    fetch('/api/effect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, receiverId: Number(receiverId) })
+    });
+}
+
+function pollEffects() {
+    fetch('/api/effect/poll')
+        .then(r => r.json())
+        .then(effects => {
+            effects.forEach(e => {
+                if (e.type === 'BIGBANG') triggerBigBang();
+                if (e.type === 'SUPERNOVA') triggerSupernovaOnPlanet(e.senderId);
+            });
+        });
+}
+setInterval(pollEffects, 3000);
+
+function triggerSupernovaOnPlanet(senderId) {
+    const planet = planets.find(p => Number(p.partnerId) === Number(senderId));
+    if (!planet) { triggerSupernova(); return; }
+    let frame = 0;
+    const px = planet.x, py = planet.y;
+    function animate() {
+        frame++;
+        if (frame > 80) return;
+        const radius = frame * 10;
+        const alpha = Math.max(0, 1 - frame / 80);
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.6;
+        const grad = ctx.createRadialGradient(px, py, 0, px, py, radius);
+        grad.addColorStop(0, 'rgba(255,255,200,0.9)');
+        grad.addColorStop(0.3, 'rgba(255,150,50,0.6)');
+        grad.addColorStop(1, 'rgba(255,50,50,0)');
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.restore();
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
 // ── 이스터에그 ──────────────────────────────────────────────────────
 let bigBangActive = false;
 let bigBangParticles = [];
@@ -993,53 +1053,37 @@ function triggerBigBang() {
     runBigBang();
 }
 
-function runBigBang() {
-    if (!bigBangActive) return;
+function updateBigBang(cx, cy) {
     bigBangTimer++;
-
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
 
     // 페이즈 1 (0~60): 폭발
     if (bigBangTimer < 60) {
         planets.forEach(p => {
-            if (p._bbPhase === 'explode') {
-                p.x += p._bbVx;
-                p.y += p._bbVy;
-                p._bbVx *= 0.95;
-                p._bbVy *= 0.95;
-            }
-        });
-        bigBangParticles.forEach(pt => {
-            pt.x += pt.vx;
-            pt.y += pt.vy;
-            pt.vx *= 0.96;
-            pt.vy *= 0.96;
-            pt.alpha -= 0.015;
+            p.x += p._bbVx || 0;
+            p.y += p._bbVy || 0;
+            if (p._bbVx) p._bbVx *= 0.95;
+            if (p._bbVy) p._bbVy *= 0.95;
         });
     }
 
-    // 페이즈 2 (60~120): 수축 (원래 위치로)
-    if (bigBangTimer >= 60 && bigBangTimer < 140) {
+    // 페이즈 2 (60~160): 원래 위치로 복귀
+    if (bigBangTimer >= 60) {
         planets.forEach((p, i) => {
             const orig = originalPlanetPositions[i];
+            if (!orig) return;
             const targetX = cx + orig.baseOrbit * systemScale * Math.cos(orig.angle);
             const targetY = cy + orig.baseOrbit * systemScale * Math.sin(orig.angle);
-            p.x += (targetX - p.x) * 0.08;
-            p.y += (targetY - p.y) * 0.08;
+            p.x += (targetX - p.x) * 0.07;
+            p.y += (targetY - p.y) * 0.07;
         });
     }
 
-    // 종료
-    if (bigBangTimer >= 160) {
-        bigBangActive = false;
-        bigBangParticles = [];
-        planets.forEach(p => { delete p._bbVx; delete p._bbVy; delete p._bbPhase; });
-        return;
-    }
-
-    // 파티클 canvas에 그리기
-    bigBangParticles.filter(pt => pt.alpha > 0).forEach(pt => {
+    // 파티클 그리기
+    bigBangParticles.forEach(pt => {
+        pt.x += pt.vx; pt.y += pt.vy;
+        pt.vx *= 0.96; pt.vy *= 0.96;
+        pt.alpha -= 0.014;
+        if (pt.alpha <= 0) return;
         ctx.save();
         ctx.globalAlpha = pt.alpha;
         ctx.fillStyle = pt.color;
@@ -1050,16 +1094,20 @@ function runBigBang() {
     });
 
     // 중심 플래시
-    if (bigBangTimer < 20) {
-        const flashAlpha = (20 - bigBangTimer) / 20 * 0.7;
+    if (bigBangTimer < 15) {
         ctx.save();
-        ctx.globalAlpha = flashAlpha;
+        ctx.globalAlpha = (15 - bigBangTimer) / 15 * 0.85;
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
     }
 
-    requestAnimationFrame(runBigBang);
+    // 종료
+    if (bigBangTimer >= 180) {
+        bigBangActive = false;
+        bigBangParticles = [];
+        planets.forEach(p => { delete p._bbVx; delete p._bbVy; });
+    }
 }
 
 function triggerSupernova() {

@@ -219,6 +219,10 @@ body.auth-body {
 .btn-primary:hover { opacity: 0.9; }
 .btn-primary:active { transform: scale(0.98); }
 
+.remember-row { display: flex; align-items: center; margin-bottom: 12px; }
+.remember-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94A3B8; cursor: pointer; }
+.remember-label input[type="checkbox"] { width: 15px; height: 15px; accent-color: #7C3AED; cursor: pointer; }
+
 .auth-footer {
     text-align: center;
     margin-top: 20px;
