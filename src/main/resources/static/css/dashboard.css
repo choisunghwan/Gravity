@@ -201,6 +201,27 @@ body {
     flex-shrink: 0;
 }
 
+.legend-title {
+    font-size: 11px;
+    color: var(--text-sub);
+    opacity: 0.6;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+}
+
+.legend-planet {
+    font-size: 13px;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.legend-score {
+    margin-left: auto;
+    font-size: 11px;
+    opacity: 0.6;
+}
+
 /* Score list */
 .score-list {
     position: absolute;
