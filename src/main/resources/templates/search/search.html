@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Gravity - 궁합 등록</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/search.css}">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-logo"><a th:href="@{/dashboard}">🪐 Gravity</a></div>
+    <div class="nav-menu">
+        <a th:href="@{/dashboard}" class="nav-link">🌌 대시보드</a>
+        <a th:href="@{/auth/logout}" class="nav-link logout">로그아웃</a>
+    </div>
+</nav>
+
+<div class="page-container">
+    <div class="page-header">
+        <h1>🔍 궁합 파트너 검색</h1>
+        <p>상대방의 아이디 또는 이름으로 검색하세요</p>
+    </div>
+
+    <form th:action="@{/search}" method="get" class="search-form">
+        <div class="search-input-wrap">
+            <input type="text" name="keyword" th:value="${keyword}"
+                   placeholder="아이디 또는 이름 검색..." class="search-input" autofocus>
+            <button type="submit" class="search-btn">검색</button>
+        </div>
+    </form>
+
+    <!-- 검색 결과 -->
+    <div th:if="${results != null}" class="search-results">
+        <div th:if="${results.empty}" class="no-results">
+            <div class="no-results-icon">🌑</div>
+            <p>검색 결과가 없습니다.</p>
+        </div>
+
+        <div th:each="item : ${results}" class="user-card">
+            <div class="user-card-avatar"
+                 th:text="${item.user.gender == 'MALE' ? '♂' : '♀'}"
+                 th:class="${'user-card-avatar ' + (item.user.gender == 'MALE' ? 'male' : 'female')}">
+            </div>
+            <div class="user-card-info">
+                <div class="user-card-name" th:text="${item.user.name}">이름</div>
+                <div class="user-card-sub">
+                    <span th:text="'@' + ${item.user.username}">@아이디</span>
+                    <span>·</span>
+                    <span th:text="${item.user.zodiac + '띠'}">띠</span>
+                    <span>·</span>
+                    <span th:text="${item.user.gender == 'MALE' ? '남성' : '여성'}">성별</span>
+                </div>
+            </div>
+            <div class="user-card-action">
+                <span th:if="${item.alreadyRegistered}" class="badge-registered">등록됨</span>
+                <a th:if="${!item.alreadyRegistered}"
+                   th:href="@{'/payment/checkout/' + ${item.user.id}}"
+                   class="btn-register">
+                    💫 궁합 등록 (990원)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,199 @@
+.payment-card {
+    max-width: 500px;
+    margin: 0 auto;
+    background: rgba(15,15,40,0.9);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 36px;
+}
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.payment-icon { font-size: 48px; margin-bottom: 12px; }
+.payment-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.payment-header p { color: #94A3B8; font-size: 14px; }
+
+.couple-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px;
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 16px;
+    margin-bottom: 24px;
+}
+
+.couple-user {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.couple-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.couple-avatar.me {
+    background: radial-gradient(circle at 35% 35%, #60A5FA, #1D4ED8);
+    box-shadow: 0 0 20px rgba(96,165,250,0.5);
+}
+
+.couple-avatar.partner {
+    background: radial-gradient(circle at 35% 35%, #C084FC, #7C3AED);
+    box-shadow: 0 0 20px rgba(192,132,252,0.5);
+}
+
+.couple-name { font-size: 15px; font-weight: 600; }
+.couple-sub { font-size: 12px; color: #94A3B8; }
+
+.couple-heart {
+    font-size: 28px;
+    color: #EC4899;
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.order-info {
+    margin-bottom: 24px;
+}
+
+.order-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: #94A3B8;
+}
+
+.order-row.total {
+    border-bottom: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #E2E8F0;
+    padding-top: 16px;
+}
+
+.price {
+    color: #A78BFA;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+#payment-widget {
+    margin-bottom: 16px;
+}
+
+.btn-pay {
+    width: 100%;
+    background: linear-gradient(135deg, #7C3AED, #EC4899);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 17px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-bottom: 12px;
+}
+.btn-pay:hover { opacity: 0.9; }
+.btn-pay:active { transform: scale(0.98); }
+
+.payment-notice {
+    text-align: center;
+    font-size: 12px;
+    color: #64748B;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.btn-back {
+    display: block;
+    text-align: center;
+    color: #64748B;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+.btn-back:hover { color: #94A3B8; }
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5,5,16,0.9);
+    backdrop-filter: blur(10px);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.loading-spinner {
+    width: 56px;
+    height: 56px;
+    border: 3px solid rgba(167,139,250,0.2);
+    border-top-color: #A78BFA;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-content p { font-size: 18px; font-weight: 600; }
+.loading-sub { font-size: 14px; color: #94A3B8; }
+
+/* Success page */
+.success-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-card {
+    text-align: center;
+    background: rgba(15,15,40,0.9);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 48px 36px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.success-icon { font-size: 64px; margin-bottom: 16px; }
+.success-card h1 { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+.success-card p { color: #94A3B8; line-height: 1.7; margin-bottom: 24px; }
+
+/* ── 반응형 ─────────────────────────────────────────────────────── */
+@media (max-width: 540px) {
+    .payment-card { padding: 24px 18px; border-radius: 16px; }
+    .couple-preview { gap: 10px; padding: 16px; }
+    .couple-avatar { width: 48px; height: 48px; font-size: 22px; }
+}

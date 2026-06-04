@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Gravity - 회원가입</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="auth-body">
+<div class="stars"></div>
+<div class="auth-container">
+    <div class="auth-card" style="max-width: 480px;">
+        <div class="auth-logo">
+            <div class="logo-icon">🪐</div>
+            <h1 class="logo-title">Gravity</h1>
+            <p class="logo-subtitle">새 여정을 시작하세요</p>
+        </div>
+
+        <form th:action="@{/auth/register}" method="post" class="auth-form" th:object="${dto}" id="registerForm">
+            <div class="form-group">
+                <label for="username">아이디</label>
+                <div class="input-with-check">
+                    <input type="text" id="username" th:field="*{username}"
+                           placeholder="4~20자 영문/숫자" autocomplete="username">
+                    <span id="usernameCheck" class="check-badge"></span>
+                </div>
+                <span class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" th:field="*{password}"
+                       placeholder="8자 이상" autocomplete="new-password">
+                <span class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="passwordConfirm">비밀번호 확인</label>
+                <input type="password" id="passwordConfirm" th:field="*{passwordConfirm}"
+                       placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password">
+                <span class="field-error" th:if="${#fields.hasErrors('passwordConfirm')}" th:errors="*{passwordConfirm}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" th:field="*{name}" placeholder="실명을 입력하세요">
+                <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="birthDate">생년월일</label>
+                <input type="date" id="birthDate" th:field="*{birthDate}" max="2010-12-31">
+                <span class="field-error" th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></span>
+            </div>
+
+            <div class="form-group">
+                <label>성별</label>
+                <div class="gender-group">
+                    <label class="gender-option">
+                        <input type="radio" th:field="*{gender}" value="MALE">
+                        <span class="gender-label">♂ 남성</span>
+                    </label>
+                    <label class="gender-option">
+                        <input type="radio" th:field="*{gender}" value="FEMALE">
+                        <span class="gender-label">♀ 여성</span>
+                    </label>
+                </div>
+                <span class="field-error" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></span>
+            </div>
+
+            <button type="submit" class="btn-primary">가입하기</button>
+        </form>
+
+        <div class="auth-footer">
+            <span>이미 계정이 있으신가요?</span>
+            <a th:href="@{/auth/login}">로그인</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const starsEl = document.querySelector('.stars');
+    for (let i = 0; i < 150; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        const size = Math.random() * 3 + 1;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        starsEl.appendChild(star);
+    }
+
+    // 아이디 중복 확인
+    let checkTimer;
+    document.getElementById('username').addEventListener('input', function() {
+        clearTimeout(checkTimer);
+        const val = this.value.trim();
+        const badge = document.getElementById('usernameCheck');
+        if (val.length < 4) { badge.textContent = ''; return; }
+        checkTimer = setTimeout(() => {
+            fetch('/auth/check-username?username=' + encodeURIComponent(val))
+                .then(r => r.json())
+                .then(available => {
+                    badge.textContent = available ? '✓ 사용 가능' : '✗ 사용 불가';
+                    badge.className = 'check-badge ' + (available ? 'ok' : 'ng');
+                });
+        }, 500);
+    });
+</script>
+</body>
+</html>

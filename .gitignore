@@ -1,0 +1,30 @@
+# 민감한 설정 파일 (API 키, DB 비밀번호 포함)
+src/main/resources/application.yml
+
+# 빌드 결과물
+target/
+*.jar
+*.war
+
+# Maven Wrapper 캐시
+.mvn/wrapper/maven-wrapper.jar
+
+# 업로드된 파일
+uploads/
+C:/gravity-uploads/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.classpath
+*.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 로그
+*.log
+logs/

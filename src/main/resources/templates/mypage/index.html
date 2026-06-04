@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Gravity - 마이페이지</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-logo"><a th:href="@{/dashboard}">🪐 Gravity</a></div>
+    <div class="nav-menu">
+        <a th:href="@{/dashboard}" class="nav-link">🌌 대시보드</a>
+        <a th:href="@{/search}" class="nav-link">🔍 궁합 등록</a>
+        <a th:href="@{/auth/logout}" class="nav-link logout">로그아웃</a>
+    </div>
+</nav>
+
+<div class="page-container">
+    <div class="mypage-card">
+
+        <div th:if="${successMsg}" class="alert alert-success" th:text="${successMsg}"></div>
+        <div th:if="${errorMsg}"   class="alert alert-error"   th:text="${errorMsg}"></div>
+
+        <!-- 프로필 사진 -->
+        <div class="profile-section">
+            <div class="profile-image-wrap" onclick="document.getElementById('fileInput').click()">
+                <img th:if="${user.profileImage != null}"
+                     th:src="@{'/uploads/' + ${user.profileImage}}"
+                     class="profile-img" alt="프로필">
+                <div th:if="${user.profileImage == null}" class="profile-placeholder">
+                    <span th:text="${user.gender == 'MALE' ? '♂' : '♀'}">?</span>
+                </div>
+                <div class="profile-overlay"><span>📷 변경</span></div>
+            </div>
+            <div class="profile-name"     th:text="${user.name}">이름</div>
+            <div class="profile-username" th:text="'@' + ${user.username}">@아이디</div>
+        </div>
+
+        <form th:action="@{/mypage/upload}" method="post" enctype="multipart/form-data" id="uploadForm">
+            <input type="file" id="fileInput" name="file" accept="image/*" style="display:none"
+                   onchange="document.getElementById('uploadForm').submit()">
+        </form>
+
+        <!-- 탭 -->
+        <div class="tab-wrap">
+            <button type="button" class="tab-btn active" onclick="switchTab('info', this)">기본 정보</button>
+            <button type="button" class="tab-btn"        onclick="switchTab('password', this)">비밀번호 변경</button>
+        </div>
+
+        <form th:action="@{/mypage/update}" method="post" th:object="${updateDto}">
+
+            <!-- 기본 정보 -->
+            <div id="tab-info" class="tab-content active">
+                <div class="form-group">
+                    <label>아이디 <span class="badge-readonly">변경 불가</span></label>
+                    <input type="text" th:value="${user.username}" disabled class="form-input input-disabled">
+                </div>
+                <div class="form-group">
+                    <label for="name">이름</label>
+                    <input type="text" id="name" th:field="*{name}" class="form-input">
+                    <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+                </div>
+                <div class="form-group">
+                    <label for="birthDate">생년월일</label>
+                    <input type="date" id="birthDate" th:field="*{birthDate}" class="form-input" max="2010-12-31">
+                    <p class="field-notice">⚠️ 변경 시 기존 궁합 점수가 재계산되지 않습니다.</p>
+                </div>
+                <div class="form-group">
+                    <label>성별</label>
+                    <div class="mp-gender-group">
+                        <label class="mp-gender-option">
+                            <input type="radio" th:field="*{gender}" value="MALE">
+                            <span class="mp-gender-label">♂ 남성</span>
+                        </label>
+                        <label class="mp-gender-option">
+                            <input type="radio" th:field="*{gender}" value="FEMALE">
+                            <span class="mp-gender-label">♀ 여성</span>
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn-save">수정 완료</button>
+            </div>
+
+            <!-- 비밀번호 변경 -->
+            <div id="tab-password" class="tab-content">
+                <div class="form-group">
+                    <label for="currentPassword">현재 비밀번호</label>
+                    <input type="password" id="currentPassword" th:field="*{currentPassword}"
+                           class="form-input" placeholder="현재 비밀번호 입력">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">새 비밀번호</label>
+                    <input type="password" id="newPassword" th:field="*{newPassword}"
+                           class="form-input" placeholder="8자 이상">
+                    <span class="field-error" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></span>
+                </div>
+                <div class="form-group">
+                    <label for="newPasswordConfirm">새 비밀번호 확인</label>
+                    <input type="password" id="newPasswordConfirm" th:field="*{newPasswordConfirm}"
+                           class="form-input" placeholder="새 비밀번호 재입력">
+                </div>
+                <button type="submit" class="btn-save">비밀번호 변경</button>
+            </div>
+
+        </form>
+
+        <a th:href="@{/dashboard}" class="btn-back">← 대시보드로</a>
+
+        <!-- 회원 탈퇴 -->
+        <div class="danger-zone">
+            <button type="button" class="btn-delete" onclick="document.getElementById('deleteModal').style.display='flex'">
+                회원 탈퇴
+            </button>
+        </div>
+
+        <!-- 탈퇴 확인 모달 -->
+        <div id="deleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center;">
+            <div style="background:#0F0F28; border:1px solid rgba(248,113,113,0.3); border-radius:20px; padding:32px; max-width:360px; width:90%; text-align:center;">
+                <div style="font-size:40px; margin-bottom:12px;">⚠️</div>
+                <h3 style="color:#F87171; margin-bottom:10px;">정말 탈퇴하시겠어요?</h3>
+                <p style="color:#94A3B8; font-size:14px; line-height:1.7; margin-bottom:24px;">
+                    탈퇴 시 모든 궁합 데이터와 계정 정보가<br>영구적으로 삭제됩니다.
+                </p>
+                <form th:action="@{/mypage/delete}" method="post" style="display:inline;">
+                    <button type="submit" style="background:#EF4444; color:white; border:none; border-radius:10px; padding:12px 24px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; margin-right:8px;">
+                        탈퇴하기
+                    </button>
+                </form>
+                <button type="button" onclick="document.getElementById('deleteModal').style.display='none'"
+                        style="background:rgba(255,255,255,0.08); color:#94A3B8; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 24px; font-size:15px; font-family:inherit; cursor:pointer;">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    function switchTab(name, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    const activeTab = /*[[${activeTab}]]*/ null;
+    if (activeTab) {
+        const btn = [...document.querySelectorAll('.tab-btn')]
+            .find(b => b.getAttribute('onclick').includes(activeTab));
+        if (btn) switchTab(activeTab, btn);
+    }
+</script>
+</body>
+</html>

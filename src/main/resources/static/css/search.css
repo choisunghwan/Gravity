@@ -1,0 +1,153 @@
+.search-form {
+    margin-bottom: 32px;
+}
+
+.search-input-wrap {
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: #E2E8F0;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+    border-color: #A78BFA;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
+}
+
+.search-input::placeholder { color: #64748B; }
+
+.search-btn {
+    background: linear-gradient(135deg, #7C3AED, #EC4899);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+.search-btn:hover { opacity: 0.9; }
+
+.search-results {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748B;
+}
+
+.no-results-icon { font-size: 60px; margin-bottom: 12px; }
+
+.user-card {
+    background: rgba(15,15,40,0.9);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.user-card:hover {
+    border-color: rgba(167,139,250,0.3);
+    box-shadow: 0 0 20px rgba(124,58,237,0.1);
+}
+
+.user-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.user-card-avatar.male {
+    background: radial-gradient(circle at 35% 35%, #60A5FA, #1D4ED8);
+    box-shadow: 0 0 15px rgba(96,165,250,0.4);
+}
+
+.user-card-avatar.female {
+    background: radial-gradient(circle at 35% 35%, #F472B6, #BE185D);
+    box-shadow: 0 0 15px rgba(244,114,182,0.4);
+}
+
+.user-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.user-card-sub {
+    font-size: 13px;
+    color: #64748B;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.user-card-action { flex-shrink: 0; }
+
+.badge-registered {
+    display: inline-block;
+    background: rgba(52,211,153,0.15);
+    color: #34D399;
+    border: 1px solid rgba(52,211,153,0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.btn-register {
+    display: inline-block;
+    background: linear-gradient(135deg, #7C3AED, #EC4899);
+    color: white;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+.btn-register:hover { opacity: 0.9; }
+
+/* ── 반응형 ─────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .search-input-wrap { flex-direction: column; }
+    .search-btn { width: 100%; }
+    .user-card { flex-wrap: wrap; gap: 10px; }
+    .user-card-action { width: 100%; }
+    .btn-register { width: 100%; text-align: center; }
+}
