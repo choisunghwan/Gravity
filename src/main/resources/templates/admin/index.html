@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity - 관리자</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-logo"><a th:href="@{/admin}">🪐 Gravity 관리자</a></div>
+    <div class="nav-menu">
+        <a th:href="@{/auth/logout}" class="nav-link logout">로그아웃</a>
+    </div>
+</nav>
+
+<div class="page-container">
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-value" th:text="${totalUsers}">0</div>
+            <div class="stat-label">전체 유저</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" th:text="${totalConnections}">0</div>
+            <div class="stat-label">전체 행성 연결</div>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <h2 class="section-title">유저 목록</h2>
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>아이디</th>
+                        <th>행성 이름</th>
+                        <th>성별</th>
+                        <th>생년월일</th>
+                        <th>가입일</th>
+                        <th>마지막 접속</th>
+                        <th>역할</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${users}" th:class="${u.role == 'ROLE_ADMIN'} ? 'admin-row' : ''">
+                        <td th:text="${u.username}">-</td>
+                        <td th:text="${u.name}">-</td>
+                        <td th:text="${u.gender == 'MALE' ? '♂ 남' : '♀ 여'}">-</td>
+                        <td th:text="${u.birthDate}">-</td>
+                        <td th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'yy.MM.dd') : '-'}">-</td>
+                        <td th:text="${u.lastActiveAt != null ? #temporals.format(u.lastActiveAt, 'yy.MM.dd HH:mm') : '-'}">-</td>
+                        <td>
+                            <span th:if="${u.role == 'ROLE_ADMIN'}" class="badge-admin">관리자</span>
+                            <span th:if="${u.role != 'ROLE_ADMIN'}" class="badge-user">유저</span>
+                        </td>
+                        <td>
+                            <a th:if="${u.role != 'ROLE_ADMIN'}"
+                               th:href="@{'/admin/user/' + ${u.id}}"
+                               class="btn-detail">행성 보기</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

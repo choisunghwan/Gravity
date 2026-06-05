@@ -32,6 +32,10 @@ public class User {
     @Column(nullable = false, length = 10)
     private String gender; // MALE, FEMALE
 
+    @Column(length = 20)
+    @Builder.Default
+    private String role = "ROLE_USER";
+
     @Column(name = "profile_image", length = 255)
     private String profileImage;
 
