@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Gravity - 우주 피드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/feed.css}">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-logo"><a th:href="@{/dashboard}">🪐 Gravity</a></div>
+    <div class="nav-menu">
+        <a th:href="@{/dashboard}" class="nav-link">🌌 대시보드</a>
+        <a th:href="@{/feed}" class="nav-link active">📡 피드</a>
+        <a th:href="@{/search}" class="nav-link">🔍 행성 추가</a>
+        <a th:href="@{/mypage}" class="nav-link">👤 <span th:text="${currentUser.name}">나</span></a>
+        <a th:href="@{/auth/logout}" class="nav-link logout">로그아웃</a>
+    </div>
+</nav>
+
+<div class="feed-container">
+
+    <!-- 글 작성 -->
+    <div class="post-write-card">
+        <div class="post-write-header">
+            <div class="post-avatar" th:style="'background:' + (${currentUser.planetColor} ?: '#4FC3F7')">
+                <span th:text="${currentUser.planetEmoji ?: '🌍'}">🌍</span>
+            </div>
+            <div class="post-write-name" th:text="${currentUser.name}">나</div>
+        </div>
+
+        <div th:if="${errorMsg}" class="alert alert-error" th:text="${errorMsg}"></div>
+
+        <form th:action="@{/feed/post}" method="post" id="postForm">
+            <textarea id="postContent" name="content" class="post-textarea"
+                      placeholder="지금 우주에서 무슨 일이 일어나고 있나요? ✨"
+                      maxlength="500" rows="3"></textarea>
+            <div class="post-char-count"><span id="charCount">0</span> / 500</div>
+            <div class="post-write-footer">
+                <label class="public-toggle">
+                    <input type="checkbox" name="isPublic" id="isPublicCheck">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-label">🌐 전체 공개</span>
+                </label>
+                <button type="submit" class="btn-post">신호 보내기 📡</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 피드 -->
+    <div class="feed-list" id="feedList">
+
+        <div th:if="${posts.empty}" class="feed-empty">
+            <div class="feed-empty-icon">🌌</div>
+            <p>아직 신호가 없어요.<br>첫 번째 신호를 보내보세요!</p>
+        </div>
+
+        <div th:each="post : ${posts}" class="post-card">
+            <div class="post-header">
+                <div class="post-avatar" th:style="'background:' + (${post.author.planetColor} ?: '#4FC3F7')">
+                    <span th:text="${post.author.planetEmoji ?: '🌍'}">🌍</span>
+                </div>
+                <div class="post-meta">
+                    <div class="post-author-name" th:text="${post.author.name}">이름</div>
+                    <div class="post-time" th:text="${#temporals.format(post.createdAt, 'MM.dd HH:mm')}">시간</div>
+                </div>
+                <div class="post-badges">
+                    <span th:if="${post.isPublic()}" class="badge-public">🌐 전체공개</span>
+                    <span th:if="${!post.isPublic()}" class="badge-private">🔒 연결된 행성</span>
+                </div>
+            </div>
+            <div class="post-content" th:text="${post.content}">내용</div>
+            <div th:if="${post.author.id == currentUser.id}" class="post-actions">
+                <form th:action="@{'/feed/delete/' + ${post.id}}" method="post" style="display:inline"
+                      onsubmit="return confirm('이 신호를 삭제할까요?')">
+                    <button type="submit" class="btn-delete-post">삭제</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const textarea = document.getElementById('postContent');
+    const charCount = document.getElementById('charCount');
+    textarea.addEventListener('input', () => {
+        charCount.textContent = textarea.value.length;
+    });
+
+    const isPublicCheck = document.getElementById('isPublicCheck');
+    const toggleLabel = document.querySelector('.toggle-label');
+    isPublicCheck.addEventListener('change', () => {
+        toggleLabel.textContent = isPublicCheck.checked ? '🌐 전체 공개' : '🔒 연결된 행성만';
+    });
+</script>
+</body>
+</html>

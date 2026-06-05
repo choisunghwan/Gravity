@@ -25,6 +25,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final com.gravity.repository.CompatibilityResultRepository compatibilityResultRepository;
     private final com.gravity.repository.ChatMessageRepository chatMessageRepository;
+    private final com.gravity.repository.PostRepository postRepository;
 
     @Value("${app.upload.path}")
     private String uploadPath;
@@ -133,6 +134,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(User user) {
+        postRepository.deleteAllByAuthorId(user.getId());
         chatMessageRepository.deleteAllByUser(user.getId());
         compatibilityResultRepository.deleteAllByUserOrPartner(user);
         userRepository.delete(user);
