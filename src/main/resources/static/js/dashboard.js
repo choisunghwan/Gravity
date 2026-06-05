@@ -663,6 +663,11 @@ function showToast(msg) {
 window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resizeCanvas(); render(); });
 
 resizeCanvas();
+// 모바일: 목성 궤도(345)가 화면에 들어오도록 초기 스케일 자동 조정
+if (canvas.width < 768) {
+    const autoScale = (canvas.width / 2 * 0.85) / 345;
+    systemScale = Math.max(SCALE_MIN, Math.min(0.75, autoScale));
+}
 render();
 updateZoomButtons();
 scheduleShootingStar();
