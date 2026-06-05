@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Gravity - 궁합 등록</title>
+    <title>Gravity - 행성 추가</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/common.css}">
     <link rel="stylesheet" th:href="@{/css/search.css}">
@@ -21,7 +21,7 @@
 
 <div class="page-container">
     <div class="page-header">
-        <h1>🔍 궁합 파트너 검색</h1>
+        <h1>🔍 행성 파트너 찾기</h1>
         <p>상대방의 아이디 또는 이름으로 검색하세요</p>
     </div>
 
@@ -60,7 +60,7 @@
                 <a th:if="${!item.alreadyRegistered}"
                    th:href="@{'/payment/checkout/' + ${item.user.id}}"
                    class="btn-register">
-                    💫 궁합 등록 (990원)
+                    💫 행성 추가 (990원)
                 </a>
             </div>
         </div>

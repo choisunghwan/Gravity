@@ -76,8 +76,8 @@ public class ClaudeService {
     private String buildPrompt(User user, User partner, int totalScore,
                                 int zodiacScore, int numerologyScore, int elementScore) {
         return String.format("""
-                당신은 한국 전통 사주와 현대 심리학을 결합한 궁합 분석 전문가입니다.
-                두 사람의 궁합을 분석해주세요. 반드시 두 사람의 실제 데이터를 바탕으로 구체적으로 작성하세요.
+                당신은 두 사람의 데이터를 분석해 끌림 지수를 산출하는 전문가입니다.
+                두 사람의 끌림 지수를 분석해주세요. 반드시 두 사람의 실제 데이터를 바탕으로 구체적으로 작성하세요.
 
                 [%s님]
                 - 생년월일: %s | 띠: %s | 생명수: %d | 성별: %s
@@ -86,7 +86,7 @@ public class ClaudeService {
                 - 생년월일: %s | 띠: %s | 생명수: %d | 성별: %s
 
                 [분석 점수]
-                - 종합: %d점 | 띠 궁합: %d점 | 수비학: %d점 | 오행: %d점
+                - 종합: %d점 | 띠 점수: %d점 | 수비학: %d점 | 오행: %d점
 
                 아래 형식으로 작성해주세요 (총 250자 내외, 친근한 말투):
 
@@ -123,30 +123,30 @@ public class ClaudeService {
         String opening, strength, caution, closing;
 
         if (totalScore >= 90) {
-            opening  = String.format("%s님(%s띠)과 %s님(%s띠)은 그야말로 천생연분입니다! 띠 궁합(%d점)이 삼합에 가까워 서로의 에너지가 완벽하게 맞물립니다.",
+            opening  = String.format("%s님(%s띠)과 %s님(%s띠)은 그야말로 천생연분입니다! 띠 점수(%d점)가 삼합에 가까워 서로의 에너지가 완벽하게 맞물립니다.",
                     myName, myZodiac, herName, herZodiac, zodiacScore);
             strength = String.format("%s의 기질과 %s의 성향이 서로를 완벽하게 보완하며, 생명수 %d와 %d의 조화도 뛰어납니다.", myTrait, herTrait, myNum, herNum);
             caution  = "다만 너무 잘 맞다 보니 서로에게 기대는 의존도가 높아질 수 있어요. 각자의 독립적인 공간도 소중히 지켜주세요.";
             closing  = "두 분의 만남은 우주가 특별히 준비한 인연입니다. 오래오래 빛나는 관계로 이어가세요! ✨";
         } else if (totalScore >= 75) {
-            opening  = String.format("%s님(%s띠)과 %s님(%s띠)의 궁합은 매우 좋습니다! 오행 조화(%d점)가 뛰어나 함께할수록 서로 성장하는 관계예요.",
+            opening  = String.format("%s님(%s띠)과 %s님(%s띠)의 끌림이 매우 강합니다! 오행 조화(%d점)가 뛰어나 함께할수록 서로 성장하는 관계예요.",
                     myName, myZodiac, herName, herZodiac, elementScore);
             strength = String.format("%s 기질을 가진 %s님은 %s 성향의 %s님과 잘 어우러집니다. 생명수 %d와 %d의 조합도 안정적인 신뢰를 만들어냅니다.",
                     myTrait, myName, herTrait, herName, myNum, herNum);
             caution  = "가끔 의사소통 방식의 차이로 오해가 생길 수 있으니, 서로의 표현 방식을 이해하려는 노력이 필요합니다.";
             closing  = "두 분이 함께라면 서로의 부족한 부분을 채우며 멋진 팀이 될 수 있어요. 응원합니다! 💫";
         } else if (totalScore >= 60) {
-            opening  = String.format("%s님(%s띠)과 %s님(%s띠)은 노력하면 좋은 궁합으로 발전할 수 있는 사이입니다. 수비학 점수(%d점)에서 흥미로운 조화가 보입니다.",
+            opening  = String.format("%s님(%s띠)과 %s님(%s띠)은 노력하면 강한 끌림으로 발전할 수 있는 사이입니다. 수비학 점수(%d점)에서 흥미로운 조화가 보입니다.",
                     myName, myZodiac, herName, herZodiac, numerologyScore);
             strength = String.format("%s 기질의 %s님은 %s 성향의 %s님에게 새로운 시각을 열어줄 수 있어요. 서로 배울 점이 많은 관계입니다.",
                     myTrait, myName, herTrait, herName);
             caution  = String.format("생명수 %d와 %d의 조합은 때로 방향성 차이를 만들 수 있어요. 큰 결정을 할 때는 충분한 대화가 중요합니다.", myNum, herNum);
-            closing  = "완벽한 궁합은 타고나는 게 아니라 만들어가는 것! 두 분의 노력이 빛날 거예요. 🌟";
+            closing  = "완벽한 끌림은 타고나는 게 아니라 만들어가는 것! 두 분의 노력이 빛날 거예요. 🌟";
         } else if (totalScore >= 45) {
             opening  = String.format("%s님(%s띠)과 %s님(%s띠)은 서로 다른 에너지를 가진 사이입니다. 차이점이 많지만, 그만큼 서로에게서 배울 것도 많아요.",
                     myName, myZodiac, herName, herZodiac);
             strength = String.format("%s 기질과 %s 성향은 언뜻 달라 보이지만, 서로의 약점을 보완할 수 있는 잠재력이 있습니다.", myTrait, herTrait);
-            caution  = String.format("띠 궁합(%d점)에서 에너지 충돌이 예상되니, 감정이 격해질 때는 한발 물러서는 여유가 필요해요.", zodiacScore);
+            caution  = String.format("띠 점수(%d점)에서 에너지 충돌이 예상되니, 감정이 격해질 때는 한발 물러서는 여유가 필요해요.", zodiacScore);
             closing  = "다름을 인정하는 것이 첫걸음입니다. 서로를 이해하려는 마음만 있다면 충분해요! 🌙";
         } else {
             opening  = String.format("%s님(%s띠)과 %s님(%s띠)은 매우 다른 에너지를 가지고 있어요. 솔직히 쉽지 않은 조합이지만, 반대 에너지가 서로를 완성시킬 수도 있습니다.",
@@ -154,7 +154,7 @@ public class ClaudeService {
             strength = String.format("%s 기질의 %s님이 %s 성향의 %s님의 부족한 면을 채워줄 수 있는 독특한 관계예요.",
                     myTrait, myName, herTrait, herName);
             caution  = "서로의 차이를 단점으로 보기보다 다양성으로 받아들이는 연습이 필요합니다. 인내심이 이 관계의 열쇠입니다.";
-            closing  = "어려운 궁합일수록 함께 극복했을 때의 기쁨이 더 큽니다. 포기하지 마세요! ⭐";
+            closing  = "거리가 멀어도 함께 가까워질 때의 기쁨이 더 큽니다. 포기하지 마세요! ⭐";
         }
 
         return opening + "\n\n" + strength + "\n\n" + caution + "\n\n" + closing;

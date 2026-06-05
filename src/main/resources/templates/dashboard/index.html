@@ -16,7 +16,7 @@
 <nav class="navbar">
     <div class="nav-logo">🪐 Gravity</div>
     <div class="nav-menu">
-        <a th:href="@{/search}" class="nav-link">🔍 궁합 등록</a>
+        <a th:href="@{/search}" class="nav-link">🔍 행성 추가</a>
         <a th:href="@{/mypage}" class="nav-user nav-link" style="-webkit-text-fill-color:inherit;">
             <img th:if="${currentUser.profileImage != null}"
                  th:src="@{'/uploads/' + ${currentUser.profileImage}}"
@@ -34,9 +34,9 @@
     <!-- 궁합 없을 때 안내 -->
     <div th:if="${compatibilities.empty}" class="empty-state">
         <div class="empty-icon">🌌</div>
-        <h2>아직 등록된 궁합이 없어요</h2>
-        <p>상대방을 검색하고 궁합을 등록해보세요!</p>
-        <a th:href="@{/search}" class="btn-primary">궁합 등록하기</a>
+        <h2>아직 연결된 행성이 없어요</h2>
+        <p>상대방을 검색하고 첫 행성을 추가해보세요!</p>
+        <a th:href="@{/search}" class="btn-primary">행성 추가하기</a>
     </div>
 
     <!-- 우주 캔버스 -->
@@ -74,7 +74,7 @@
         <div class="score-list" id="scoreList">
             <div class="drawer-handle" id="drawerToggle">▲ 목록</div>
             <div class="score-list-header" onclick="toggleScoreList()">
-                <h3>궁합 목록</h3>
+                <h3>내 우주</h3>
                 <button class="score-list-toggle" id="scoreListToggle">∧</button>
             </div>
             <div class="score-list-items">
@@ -109,11 +109,11 @@
         </div>
         <div class="modal-score-area">
             <div class="modal-total-score" id="modalScore">0</div>
-            <div class="modal-score-sub">종합 궁합 점수</div>
+            <div class="modal-score-sub">끌림 지수</div>
         </div>
         <div class="modal-scores">
             <div class="modal-score-item">
-                <span>띠 궁합</span>
+                <span>띠 점수</span>
                 <div class="mini-bar-wrap"><div class="mini-bar" id="zodiacBar"></div></div>
                 <span id="zodiacScore">0</span>
             </div>
@@ -134,7 +134,7 @@
             <div><span class="info-label">등록일</span><span id="modalDate">-</span></div>
         </div>
         <div class="modal-analysis">
-            <h3>✨ AI 궁합 분석</h3>
+            <h3>✨ 궤도 분석</h3>
             <p id="modalAnalysis">분석 텍스트</p>
         </div>
         <div class="modal-actions">

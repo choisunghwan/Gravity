@@ -15,7 +15,7 @@
     <div class="nav-logo"><a th:href="@{/dashboard}">🪐 Gravity</a></div>
     <div class="nav-menu">
         <a th:href="@{/dashboard}" class="nav-link">🌌 대시보드</a>
-        <a th:href="@{/search}" class="nav-link">🔍 궁합 등록</a>
+        <a th:href="@{/search}" class="nav-link">🔍 행성 추가</a>
         <a th:href="@{/auth/logout}" class="nav-link logout">로그아웃</a>
     </div>
 </nav>
@@ -68,7 +68,7 @@
                 <div class="form-group">
                     <label for="birthDate">생년월일</label>
                     <input type="date" id="birthDate" th:field="*{birthDate}" class="form-input" max="2010-12-31">
-                    <p class="field-notice">⚠️ 변경 시 기존 궁합 점수가 재계산되지 않습니다.</p>
+                    <p class="field-notice">⚠️ 변경 시 기존 끌림 지수가 재계산되지 않습니다.</p>
                 </div>
                 <div class="form-group">
                     <label>성별</label>
@@ -124,7 +124,7 @@
                 <div style="font-size:40px; margin-bottom:12px;">⚠️</div>
                 <h3 style="color:#F87171; margin-bottom:10px;">정말 탈퇴하시겠어요?</h3>
                 <p style="color:#94A3B8; font-size:14px; line-height:1.7; margin-bottom:24px;">
-                    탈퇴 시 모든 궁합 데이터와 계정 정보가<br>영구적으로 삭제됩니다.
+                    탈퇴 시 모든 행성 데이터와 계정 정보가<br>영구적으로 삭제됩니다.
                 </p>
                 <form th:action="@{/mypage/delete}" method="post" style="display:inline;">
                     <button type="submit" style="background:#EF4444; color:white; border:none; border-radius:10px; padding:12px 24px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; margin-right:8px;">

@@ -639,9 +639,9 @@ function captureResult() {
 function shareResult() {
     const data = document.getElementById('detailModal')._currentData;
     if (!data) return;
-    const text = `🪐 Gravity 궁합 결과\n${currentUserName} ♡ ${data.partnerName}\n종합 점수: ${data.score}점 (${data.scoreLabel})\n\n${data.analysisText ? data.analysisText.slice(0, 100) + '...' : ''}`;
+    const text = `🪐 Gravity 끌림 분석\n${currentUserName} ♡ ${data.partnerName}\n끌림 지수: ${data.score}점 (${data.scoreLabel})\n\n${data.analysisText ? data.analysisText.slice(0, 100) + '...' : ''}`;
     if (navigator.share) {
-        navigator.share({ title: 'Gravity 궁합 결과', text }).catch(() => copyToClipboard(text));
+        navigator.share({ title: 'Gravity 끌림 분석', text }).catch(() => copyToClipboard(text));
     } else {
         copyToClipboard(text);
     }

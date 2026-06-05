@@ -58,7 +58,7 @@ public class PaymentController {
         model.addAttribute("clientKey", clientKey);
         model.addAttribute("orderId", orderId);
         model.addAttribute("amount", 990);
-        model.addAttribute("orderName", me.getName() + " ♡ " + partner.getName() + " 궁합 분석");
+        model.addAttribute("orderName", me.getName() + " ♡ " + partner.getName() + " 궤도 분석");
         return "payment/checkout";
     }
 
@@ -93,7 +93,7 @@ public class PaymentController {
         } catch (Exception e) {
             log.error("궁합 분석 중 오류", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("success", false, "message", "궁합 분석 중 오류가 발생했습니다."));
+                    .body(Map.of("success", false, "message", "분석 중 오류가 발생했습니다."));
         }
     }
 
@@ -119,7 +119,7 @@ public class PaymentController {
             return "redirect:/dashboard?new=" + result.getId();
         } catch (Exception e) {
             log.error("궁합 분석 오류", e);
-            model.addAttribute("errorMessage", "궁합 분석 중 오류가 발생했습니다.");
+            model.addAttribute("errorMessage", "분석 중 오류가 발생했습니다.");
             return "payment/fail";
         }
     }
