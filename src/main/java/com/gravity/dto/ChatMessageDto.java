@@ -12,5 +12,6 @@ public class ChatMessageDto {
     private Long receiverId;
     private String message;
     private String createdAt;
+    private String createdAtIso;
     private boolean mine;
 }

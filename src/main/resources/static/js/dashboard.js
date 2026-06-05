@@ -719,7 +719,7 @@ function loadMessages() {
             box.innerHTML = '';
             msgs.forEach(m => appendMessage(m, false));
             box.scrollTop = box.scrollHeight;
-            if (msgs.length > 0) lastMessageTime = nowKST();
+            if (msgs.length > 0) lastMessageTime = msgs[msgs.length - 1].createdAtIso || nowKST();
         });
 }
 
@@ -752,7 +752,7 @@ function sendChatMessage() {
         appendMessage(m);
         const box = document.getElementById('chatMessages');
         box.scrollTop = box.scrollHeight;
-        lastMessageTime = nowKST();
+        lastMessageTime = m.createdAtIso || nowKST();
         triggerSpeechBubble(currentPartnerId, msg);
         triggerEmojiParticle(currentPartnerId, extractEmoji(msg));
     });
@@ -797,7 +797,7 @@ function pollNewMessages() {
         .then(r => r.json())
         .then(msgs => {
             if (!msgs.length) return;
-            lastMessageTime = nowKST();
+            lastMessageTime = msgs[msgs.length - 1].createdAtIso || nowKST();
             msgs.forEach(m => {
                 // 상대 행성 → 내 지구로 이모지 날아오기
                 triggerEmojiParticle(m.senderId, extractEmoji(m.message), true);
@@ -1171,7 +1171,7 @@ setInterval(() => {
             .then(r => r.json())
             .then(msgs => {
                 if (!msgs.length) return;
-                lastMessageTime = nowKST();
+                lastMessageTime = msgs[msgs.length - 1].createdAtIso || nowKST();
                 msgs.forEach(m => { triggerSpeechBubble(m.senderId, m.message); unreadCount++; updateBadge(); });
             });
     }

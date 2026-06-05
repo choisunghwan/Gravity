@@ -21,7 +21,8 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
 
-    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter FMT     = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter ISO_FMT  = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Transactional
     public ChatMessageDto sendMessage(Long senderId, Long receiverId, String message) {
@@ -59,6 +60,7 @@ public class ChatService {
                 .receiverId(m.getReceiver().getId())
                 .message(m.getMessage())
                 .createdAt(m.getCreatedAt().format(FMT))
+                .createdAtIso(m.getCreatedAt().format(ISO_FMT))
                 .mine(m.getSender().getId().equals(currentUserId))
                 .build();
     }
