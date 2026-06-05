@@ -29,16 +29,23 @@ public class DataInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (!userRepository.existsByUsername(adminUsername)) {
-            User admin = User.builder()
-                    .username(adminUsername)
-                    .password(passwordEncoder.encode(adminPassword))
-                    .name(adminName)
-                    .birthDate(LocalDate.of(1990, 1, 1))
-                    .gender("MALE")
-                    .role("ROLE_ADMIN")
-                    .build();
-            userRepository.save(admin);
-        }
+        userRepository.findByUsername(adminUsername).ifPresentOrElse(
+            existing -> {
+                existing.setPassword(passwordEncoder.encode(adminPassword));
+                existing.setRole("ROLE_ADMIN");
+                userRepository.save(existing);
+            },
+            () -> {
+                User admin = User.builder()
+                        .username(adminUsername)
+                        .password(passwordEncoder.encode(adminPassword))
+                        .name(adminName)
+                        .birthDate(LocalDate.of(1990, 1, 1))
+                        .gender("MALE")
+                        .role("ROLE_ADMIN")
+                        .build();
+                userRepository.save(admin);
+            }
+        );
     }
 }
