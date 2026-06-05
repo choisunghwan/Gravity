@@ -11,7 +11,10 @@ const imageCache = {};
 let chatOpen = false;
 let currentPartnerId = null;
 let currentPartnerName = null;
-let lastMessageTime = new Date().toISOString().slice(0, 19);
+function nowKST() {
+    return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19);
+}
+let lastMessageTime = nowKST();
 let pollInterval = null;
 let unreadCount = 0;
 const speechBubbles = [];
@@ -714,9 +717,9 @@ function loadMessages() {
         .then(msgs => {
             const box = document.getElementById('chatMessages');
             box.innerHTML = '';
-            msgs.forEach(m => appendMessage(m));
+            msgs.forEach(m => appendMessage(m, false));
             box.scrollTop = box.scrollHeight;
-            if (msgs.length > 0) lastMessageTime = new Date().toISOString().slice(0, 19);
+            if (msgs.length > 0) lastMessageTime = nowKST();
         });
 }
 
@@ -749,16 +752,28 @@ function sendChatMessage() {
         appendMessage(m);
         const box = document.getElementById('chatMessages');
         box.scrollTop = box.scrollHeight;
-        lastMessageTime = new Date().toISOString().slice(0, 19);
+        lastMessageTime = nowKST();
         triggerSpeechBubble(currentPartnerId, msg);
         triggerEmojiParticle(currentPartnerId, extractEmoji(msg));
     });
 }
 
-function appendMessage(m) {
+function appendMessage(m, animate = true) {
     const box = document.getElementById('chatMessages');
+    const last = box.lastElementChild;
+    const consecutive = last && last.dataset.senderId == m.senderId;
+
+    // 연속 메시지면 이전 메시지의 시간 숨기기
+    if (consecutive) {
+        const prevTime = last.querySelector('.chat-time');
+        if (prevTime) prevTime.style.display = 'none';
+    }
+
     const div = document.createElement('div');
-    div.className = 'chat-msg ' + (m.mine ? 'chat-msg-mine' : 'chat-msg-other');
+    div.className = 'chat-msg ' + (m.mine ? 'chat-msg-mine' : 'chat-msg-other')
+        + (consecutive ? ' chat-msg-consecutive' : '')
+        + (animate ? ' chat-msg-new' : '');
+    div.dataset.senderId = m.senderId;
     div.innerHTML = `<span class="chat-bubble">${escapeHtml(m.message)}</span><span class="chat-time">${m.createdAt}</span>`;
     box.appendChild(div);
 }
@@ -769,7 +784,7 @@ function escapeHtml(s) {
 
 function startPolling() {
     stopPolling();
-    pollInterval = setInterval(pollNewMessages, 3000);
+    pollInterval = setInterval(pollNewMessages, 1500);
 }
 
 function stopPolling() {
@@ -781,7 +796,7 @@ function pollNewMessages() {
         .then(r => r.json())
         .then(msgs => {
             if (!msgs.length) return;
-            lastMessageTime = new Date().toISOString().slice(0, 19);
+            lastMessageTime = nowKST();
             msgs.forEach(m => {
                 // 상대 행성 → 내 지구로 이모지 날아오기
                 triggerEmojiParticle(m.senderId, extractEmoji(m.message), true);
@@ -1155,7 +1170,7 @@ setInterval(() => {
             .then(r => r.json())
             .then(msgs => {
                 if (!msgs.length) return;
-                lastMessageTime = new Date().toISOString().slice(0, 19);
+                lastMessageTime = nowKST();
                 msgs.forEach(m => { triggerSpeechBubble(m.senderId, m.message); unreadCount++; updateBadge(); });
             });
     }
