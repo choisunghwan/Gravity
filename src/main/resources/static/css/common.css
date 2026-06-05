@@ -65,6 +65,7 @@ body {
 }
 
 .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.nav-link.active { color: #A78BFA; background: rgba(124,58,237,0.12); }
 .nav-link.logout { color: #F87171; }
 
 .nav-user {

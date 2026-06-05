@@ -16,6 +16,17 @@ button, input, select, textarea { touch-action: manipulation; }
     .nav-user { font-size: 12px; gap: 4px; padding: 6px 8px; }
 }
 
+@media (max-width: 480px) {
+    .nav-menu {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-wrap: nowrap;
+        gap: 2px;
+    }
+    .nav-menu::-webkit-scrollbar { display: none; }
+}
+
 @media (max-width: 400px) {
     .nav-user span:last-child { display: none; }
 }
