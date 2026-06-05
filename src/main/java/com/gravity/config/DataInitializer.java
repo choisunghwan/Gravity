@@ -21,7 +21,7 @@ public class DataInitializer implements ApplicationRunner {
     @Value("${admin.username:admin}")
     private String adminUsername;
 
-    @Value("${admin.password:REMOVED}")
+    @Value("${admin.password}")
     private String adminPassword;
 
     @Value("${admin.name:우주}")
