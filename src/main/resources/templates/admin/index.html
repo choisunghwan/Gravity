@@ -18,6 +18,9 @@
 </nav>
 
 <div class="page-container">
+
+    <div th:if="${successMsg}" class="alert-success" th:text="${successMsg}"></div>
+
     <div class="admin-stats">
         <div class="stat-card">
             <div class="stat-value" th:text="${totalUsers}">0</div>
@@ -30,43 +33,76 @@
     </div>
 
     <div class="admin-section">
-        <h2 class="section-title">유저 목록</h2>
-        <div class="admin-table-wrap">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>아이디</th>
-                        <th>행성 이름</th>
-                        <th>성별</th>
-                        <th>생년월일</th>
-                        <th>가입일</th>
-                        <th>마지막 접속</th>
-                        <th>역할</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="u : ${users}" th:class="${u.role == 'ROLE_ADMIN'} ? 'admin-row' : ''">
-                        <td th:text="${u.username}">-</td>
-                        <td th:text="${u.name}">-</td>
-                        <td th:text="${u.gender == 'MALE' ? '♂ 남' : '♀ 여'}">-</td>
-                        <td th:text="${u.birthDate}">-</td>
-                        <td th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'yy.MM.dd') : '-'}">-</td>
-                        <td th:text="${u.lastActiveAt != null ? #temporals.format(u.lastActiveAt, 'yy.MM.dd HH:mm') : '-'}">-</td>
-                        <td>
-                            <span th:if="${u.role == 'ROLE_ADMIN'}" class="badge-admin">관리자</span>
-                            <span th:if="${u.role != 'ROLE_ADMIN'}" class="badge-user">유저</span>
-                        </td>
-                        <td>
-                            <a th:if="${u.role != 'ROLE_ADMIN'}"
-                               th:href="@{'/admin/user/' + ${u.id}}"
-                               class="btn-detail">행성 보기</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="section-header">
+            <h2 class="section-title">유저 목록</h2>
+            <button class="btn-delete-selected" id="btnDeleteSelected" onclick="confirmDelete()" disabled>
+                🗑 선택 탈퇴
+            </button>
         </div>
+
+        <form th:action="@{/admin/delete-users}" method="post" id="deleteForm">
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
+                            <th>아이디</th>
+                            <th>행성 이름</th>
+                            <th>성별</th>
+                            <th>생년월일</th>
+                            <th>가입일</th>
+                            <th>마지막 접속</th>
+                            <th>역할</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${users}" th:class="${u.role == 'ROLE_ADMIN'} ? 'admin-row' : ''">
+                            <td>
+                                <input th:if="${u.role != 'ROLE_ADMIN'}"
+                                       type="checkbox" name="userIds" th:value="${u.id}"
+                                       class="user-check" onchange="updateDeleteBtn()">
+                            </td>
+                            <td th:text="${u.username}">-</td>
+                            <td th:text="${u.name}">-</td>
+                            <td th:text="${u.gender == 'MALE' ? '♂ 남' : '♀ 여'}">-</td>
+                            <td th:text="${u.birthDate}">-</td>
+                            <td th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'yy.MM.dd') : '-'}">-</td>
+                            <td th:text="${u.lastActiveAt != null ? #temporals.format(u.lastActiveAt, 'yy.MM.dd HH:mm') : '-'}">-</td>
+                            <td>
+                                <span th:if="${u.role == 'ROLE_ADMIN'}" class="badge-admin">관리자</span>
+                                <span th:if="${u.role != 'ROLE_ADMIN'}" class="badge-user">유저</span>
+                            </td>
+                            <td>
+                                <a th:if="${u.role != 'ROLE_ADMIN'}"
+                                   th:href="@{'/admin/user/' + ${u.id}}"
+                                   class="btn-detail">행성 보기</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
     </div>
 </div>
+
+<script>
+function toggleAll(cb) {
+    document.querySelectorAll('.user-check').forEach(c => c.checked = cb.checked);
+    updateDeleteBtn();
+}
+function updateDeleteBtn() {
+    const checked = document.querySelectorAll('.user-check:checked').length;
+    const btn = document.getElementById('btnDeleteSelected');
+    btn.disabled = checked === 0;
+    btn.textContent = checked > 0 ? `🗑 선택 탈퇴 (${checked}명)` : '🗑 선택 탈퇴';
+}
+function confirmDelete() {
+    const checked = document.querySelectorAll('.user-check:checked').length;
+    if (confirm(`선택한 ${checked}명을 탈퇴처리 하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+        document.getElementById('deleteForm').submit();
+    }
+}
+</script>
 </body>
 </html>

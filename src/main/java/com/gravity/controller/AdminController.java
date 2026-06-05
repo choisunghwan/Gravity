@@ -4,12 +4,12 @@ import com.gravity.entity.CompatibilityResult;
 import com.gravity.entity.User;
 import com.gravity.repository.CompatibilityResultRepository;
 import com.gravity.repository.UserRepository;
+import com.gravity.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -20,6 +20,7 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final CompatibilityResultRepository compatibilityResultRepository;
+    private final UserService userService;
 
     @GetMapping
     public String dashboard(Model model) {
@@ -30,6 +31,19 @@ public class AdminController {
         model.addAttribute("totalUsers", users.size());
         model.addAttribute("totalConnections", totalConnections);
         return "admin/index";
+    }
+
+    @PostMapping("/delete-users")
+    public String deleteUsers(@RequestParam List<Long> userIds, RedirectAttributes ra) {
+        int count = 0;
+        for (Long id : userIds) {
+            userRepository.findById(id).ifPresent(u -> {
+                if (!"ROLE_ADMIN".equals(u.getRole())) userService.deleteUser(u);
+            });
+            count++;
+        }
+        ra.addFlashAttribute("successMsg", count + "명의 회원을 탈퇴처리 했습니다.");
+        return "redirect:/admin";
     }
 
     @GetMapping("/user/{id}")
