@@ -45,8 +45,9 @@
             </div>
 
             <div class="form-group">
-                <label for="name">이름</label>
-                <input type="text" id="name" th:field="*{name}" placeholder="실명을 입력하세요">
+                <label for="name">행성 이름</label>
+                <input type="text" id="name" th:field="*{name}" placeholder="우주에서 불릴 이름">
+                <span class="field-hint">🪐 우주에서 나를 표현하는 이름을 입력하세요</span>
                 <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
             </div>
 
