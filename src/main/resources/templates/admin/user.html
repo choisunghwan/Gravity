@@ -14,6 +14,7 @@
     <div class="nav-logo"><a th:href="@{/admin}">🪐 Gravity 관리자</a></div>
     <div class="nav-menu">
         <a th:href="@{/admin}" class="nav-link">← 목록</a>
+        <a th:href="@{/dashboard}" class="nav-link">🌌 대시보드</a>
         <a th:href="@{/auth/logout}" class="nav-link logout">로그아웃</a>
     </div>
 </nav>
@@ -29,7 +30,7 @@
             <div class="user-info-meta">
                 <span th:text="${user.zodiac + '띠'}">-</span>
                 <span th:text="${user.birthDate}">-</span>
-                <span th:text="'가입: ' + (#temporals.format(user.createdAt, 'yy.MM.dd'))">-</span>
+                <span th:text="${user.createdAt != null ? '가입: ' + #temporals.format(user.createdAt, 'yy.MM.dd') : ''}">-</span>
             </div>
         </div>
     </div>

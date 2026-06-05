@@ -119,16 +119,20 @@
     color: var(--accent-light);
     font-size: 11px;
     font-weight: 600;
-    padding: 3px 8px;
+    padding: 3px 10px;
     border-radius: 6px;
+    white-space: nowrap;
+    display: inline-block;
 }
 
 .badge-user {
     background: rgba(255,255,255,0.06);
     color: var(--text-sub);
     font-size: 11px;
-    padding: 3px 8px;
+    padding: 3px 10px;
     border-radius: 6px;
+    white-space: nowrap;
+    display: inline-block;
 }
 
 .btn-detail {
