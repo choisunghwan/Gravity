@@ -29,7 +29,11 @@
         </div>
         <div class="stat-card">
             <div class="stat-value" th:text="${totalConnections}">0</div>
-            <div class="stat-label">전체 행성 연결</div>
+            <div class="stat-label">전체 궤도 분석</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" th:text="${#numbers.formatInteger(totalConnections * 990, 3, 'COMMA') + '원'}">0원</div>
+            <div class="stat-label">누적 수익</div>
         </div>
     </div>
 
