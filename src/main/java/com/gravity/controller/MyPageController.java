@@ -27,9 +27,14 @@ public class MyPageController {
     public String myPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
         model.addAttribute("user", user);
-        model.addAttribute("updateDto", new UserUpdateDto(
-                user.getName(), user.getBirthDate(), user.getGender(), "", "", ""
-        ));
+        UserUpdateDto updateDto = new UserUpdateDto();
+        updateDto.setName(user.getName());
+        updateDto.setBirthDate(user.getBirthDate());
+        updateDto.setGender(user.getGender());
+        updateDto.setPlanetEmoji(user.getPlanetEmoji());
+        updateDto.setPlanetColor(user.getPlanetColor());
+        updateDto.setStatusMessage(user.getStatusMessage());
+        model.addAttribute("updateDto", updateDto);
         return "mypage/index";
     }
 
