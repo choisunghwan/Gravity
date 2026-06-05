@@ -24,6 +24,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final com.gravity.repository.CompatibilityResultRepository compatibilityResultRepository;
+    private final com.gravity.repository.ChatMessageRepository chatMessageRepository;
 
     @Value("${app.upload.path}")
     private String uploadPath;
@@ -127,7 +128,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(User user) {
-        // 연관된 궁합 결과 먼저 삭제 (FK 제약)
+        chatMessageRepository.deleteAllByUser(user.getId());
         compatibilityResultRepository.deleteAllByUserOrPartner(user);
         userRepository.delete(user);
     }
