@@ -42,8 +42,9 @@ app:
     path: ${APP_UPLOAD_PATH:/tmp/gravity-uploads/}
 
 admin:
-  username: ${ADMIN_USERNAME:gravity_admin}
-  password: ${ADMIN_PASSWORD:admin1234!}
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:"REMOVED"}
+  name: ${ADMIN_NAME:우주}
 
 logging:
   level:
