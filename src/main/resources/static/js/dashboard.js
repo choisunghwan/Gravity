@@ -1131,6 +1131,18 @@ window.openChat      = openChat;
 window.backToPartners = backToPartners;
 window.sendChatMessage = sendChatMessage;
 
+// 모바일 키보드가 올라올 때 채팅 패널이 키보드 뒤에 숨지 않도록 위로 올림
+if (window.visualViewport) {
+    function onViewportResize() {
+        const panel = document.getElementById('chatPanel');
+        if (!panel) return;
+        const keyboardHeight = window.innerHeight - window.visualViewport.offsetTop - window.visualViewport.height;
+        panel.style.bottom = Math.max(0, keyboardHeight) + 'px';
+    }
+    window.visualViewport.addEventListener('resize', onViewportResize);
+    window.visualViewport.addEventListener('scroll', onViewportResize);
+}
+
 // 백그라운드에서도 새 메시지 polling
 setInterval(() => {
     if (!currentPartnerId) {
