@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ public class WishController {
 
     @GetMapping("/active")
     public List<Map<String, String>> getActiveWishes() {
-        LocalDateTime since = LocalDateTime.now().minusSeconds(20);
+        LocalDateTime since = LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusSeconds(20);
         return wishRepository.findActiveWishes(since).stream()
                 .map(w -> Map.of("text", w.getText(), "userName", w.getUserName()))
                 .collect(Collectors.toList());

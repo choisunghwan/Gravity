@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class ChatController {
     @GetMapping("/online")
     public List<Long> getOnlinePartners(Principal principal) {
         User me = userService.findByUsername(principal.getName()).orElseThrow();
-        LocalDateTime threshold = LocalDateTime.now().minusMinutes(3);
+        LocalDateTime threshold = LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusMinutes(3);
         return compatibilityResultRepository.findByUserOrderByScoreDesc(me).stream()
                 .map(c -> c.getPartner())
                 .filter(p -> p.getLastActiveAt() != null && p.getLastActiveAt().isAfter(threshold))

@@ -3,6 +3,7 @@ package com.gravity.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "special_effects")
@@ -29,5 +30,5 @@ public class SpecialEffect {
     private LocalDateTime createdAt;
 
     @PrePersist
-    protected void onCreate() { createdAt = LocalDateTime.now(); }
+    protected void onCreate() { createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
 }

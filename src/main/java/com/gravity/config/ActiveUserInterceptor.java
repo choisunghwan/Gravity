@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class ActiveUserInterceptor implements HandlerInterceptor {
             // 정적 파일, API 폴링 요청은 제외
             if (!uri.startsWith("/css") && !uri.startsWith("/js") && !uri.startsWith("/images")
                     && !uri.equals("/api/chat/new")) {
-                userRepository.updateLastActive(auth.getName(), LocalDateTime.now());
+                userRepository.updateLastActive(auth.getName(), LocalDateTime.now(ZoneId.of("Asia/Seoul")));
             }
         }
         return true;
