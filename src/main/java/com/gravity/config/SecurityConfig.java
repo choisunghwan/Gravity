@@ -36,7 +36,11 @@ public class SecurityConfig {
                 .loginProcessingUrl("/auth/login")
                 .usernameParameter("username")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/dashboard", true)
+                .successHandler((req, res, auth) -> {
+                    boolean isAdmin = auth.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                    res.sendRedirect(isAdmin ? "/admin" : "/dashboard");
+                })
                 .failureUrl("/auth/login?error=true")
                 .permitAll()
             )
