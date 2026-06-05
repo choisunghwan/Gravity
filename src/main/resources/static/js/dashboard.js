@@ -761,7 +761,7 @@ function sendChatMessage() {
 function appendMessage(m, animate = true) {
     const box = document.getElementById('chatMessages');
     const last = box.lastElementChild;
-    const consecutive = last && last.dataset.senderId == m.senderId;
+    const consecutive = last && last.dataset.senderId == m.senderId && last.dataset.timeMin === m.createdAt;
 
     // 연속 메시지면 이전 메시지의 시간 숨기기
     if (consecutive) {
@@ -774,6 +774,7 @@ function appendMessage(m, animate = true) {
         + (consecutive ? ' chat-msg-consecutive' : '')
         + (animate ? ' chat-msg-new' : '');
     div.dataset.senderId = m.senderId;
+    div.dataset.timeMin = m.createdAt;
     div.innerHTML = `<span class="chat-bubble">${escapeHtml(m.message)}</span><span class="chat-time">${m.createdAt}</span>`;
     box.appendChild(div);
 }
