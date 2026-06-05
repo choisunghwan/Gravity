@@ -87,7 +87,11 @@ public class DashboardController {
             sb.append("\"orbitPlanet\":\"").append(dto.getOrbitPlanetName()).append("\",");
             sb.append("\"gender\":\"").append(dto.getPartnerGender() != null ? dto.getPartnerGender() : "").append("\",");
             String img = dto.getPartnerProfileImage();
-            sb.append("\"profileImage\":").append(img != null ? "\"" + escapeJson(img) + "\"" : "null");
+            sb.append("\"profileImage\":").append(img != null ? "\"" + escapeJson(img) + "\"" : "null").append(",");
+            sb.append("\"partnerEmoji\":\"").append(escapeJson(dto.getPartnerPlanetEmoji())).append("\",");
+            String status = dto.getPartnerStatusMessage();
+            sb.append("\"partnerStatus\":").append(status != null ? "\"" + escapeJson(status) + "\"" : "null").append(",");
+            sb.append("\"chatBonus\":").append(dto.getChatBonus());
             sb.append("}");
         }
         sb.append("]");

@@ -3,12 +3,15 @@ package com.gravity.service;
 import com.gravity.dto.CompatibilityResultDto;
 import com.gravity.entity.CompatibilityResult;
 import com.gravity.entity.User;
+import com.gravity.repository.ChatMessageRepository;
 import com.gravity.repository.CompatibilityResultRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class CompatibilityService {
 
     private final CompatibilityResultRepository compatibilityResultRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final ClaudeService claudeService;
 
     // 이미 등록된 궁합인지 확인
@@ -68,6 +72,8 @@ public class CompatibilityService {
 
     @Transactional
     public List<CompatibilityResultDto> getAllCompatibilities(User user) {
+        LocalDateTime weekAgo = LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(7);
+
         return compatibilityResultRepository.findAllByUserOrPartner(user)
                 .stream()
                 .map(cr -> {
@@ -81,11 +87,14 @@ public class CompatibilityService {
                     return cr;
                 })
                 .map(cr -> {
-                    // 내가 partner인 경우 역방향으로 DTO 생성
+                    User partner = cr.getUser().getId().equals(user.getId()) ? cr.getPartner() : cr.getUser();
+                    int chatBonus = chatMessageRepository.countRecentMessages(user.getId(), partner.getId(), weekAgo);
+
+                    CompatibilityResultDto dto;
                     if (cr.getUser().getId().equals(user.getId())) {
-                        return CompatibilityResultDto.from(cr);
+                        dto = CompatibilityResultDto.from(cr);
                     } else {
-                        CompatibilityResultDto dto = new CompatibilityResultDto();
+                        dto = new CompatibilityResultDto();
                         dto.setId(cr.getId());
                         dto.setPartnerId(cr.getUser().getId());
                         dto.setPartnerName(cr.getUser().getName());
@@ -93,14 +102,18 @@ public class CompatibilityService {
                         dto.setPartnerBirthDate(cr.getUser().getBirthDate());
                         dto.setPartnerGender(cr.getUser().getGender());
                         dto.setPartnerZodiac(cr.getUser().getZodiac());
+                        dto.setPartnerPlanetEmoji(cr.getUser().getPlanetEmoji());
+                        dto.setPartnerPlanetColor(cr.getUser().getPlanetColor());
+                        dto.setPartnerStatusMessage(cr.getUser().getStatusMessage());
                         dto.setScore(cr.getScore());
                         dto.setZodiacScore(cr.getZodiacScore());
                         dto.setNumerologyScore(cr.getNumerologyScore());
                         dto.setElementScore(cr.getElementScore());
                         dto.setAnalysisText(cr.getAnalysisText());
                         dto.setCreatedAt(cr.getCreatedAt().toLocalDate().toString());
-                        return dto;
                     }
+                    dto.setChatBonus(chatBonus);
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }

@@ -54,6 +54,11 @@ public class UserService {
         user.setName(dto.getName());
         user.setBirthDate(dto.getBirthDate());
         user.setGender(dto.getGender());
+        if (dto.getPlanetEmoji() != null && !dto.getPlanetEmoji().isBlank())
+            user.setPlanetEmoji(dto.getPlanetEmoji());
+        if (dto.getPlanetColor() != null && !dto.getPlanetColor().isBlank())
+            user.setPlanetColor(dto.getPlanetColor());
+        user.setStatusMessage(dto.getStatusMessage());
         userRepository.save(user);
     }
 

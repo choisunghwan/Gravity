@@ -172,6 +172,17 @@ body {
     border-radius: 20px;
 }
 
+.center-status {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 4px;
+    max-width: 120px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Legend */
 .legend {
     position: absolute;

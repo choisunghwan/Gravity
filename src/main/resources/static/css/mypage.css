@@ -211,6 +211,48 @@
 
 .form-input::-webkit-calendar-picker-indicator { filter: invert(1); }
 
+/* ── 행성 꾸미기 ────────────────────────────────────────────────── */
+.planet-color-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.color-input {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: none;
+    padding: 0;
+}
+
+.color-preview {
+    font-size: 13px;
+    color: #94A3B8;
+}
+
+.emoji-pick-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.emoji-btn {
+    font-size: 24px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
+    line-height: 1;
+}
+
+.emoji-btn:hover { background: rgba(255,255,255,0.08); }
+.emoji-btn.selected { border-color: #A78BFA; background: rgba(124,58,237,0.15); }
+
 .input-disabled {
     opacity: 0.4;
     cursor: not-allowed;

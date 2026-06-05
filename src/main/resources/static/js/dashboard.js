@@ -269,6 +269,8 @@ function initPlanets() {
             y: cy + c.orbitRadius * Math.sin(angle),
             hovered: false,
             gender: c.gender || '',
+            emoji: c.partnerEmoji || null,
+            status: c.partnerStatus || null,
             img: null
         };
         if (c.profileImage) {
@@ -370,13 +372,20 @@ function render() {
             ctx.fillStyle = grad;
             ctx.fill();
 
-            // 성별 기호
-            const symbol = p.gender === 'MALE' ? '♂' : '♀';
-            ctx.fillStyle = p.gender === 'MALE' ? '#0369A1' : '#BE185D';
-            ctx.font = `bold ${Math.max(10, radius * 0.75)}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(symbol, p.x, p.y);
+            // 이모지 (커스텀 있으면 이모지, 없으면 성별 기호)
+            if (p.emoji) {
+                ctx.font = `${Math.max(12, radius * 0.9)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(p.emoji, p.x, p.y);
+            } else {
+                const symbol = p.gender === 'MALE' ? '♂' : '♀';
+                ctx.fillStyle = p.gender === 'MALE' ? '#0369A1' : '#BE185D';
+                ctx.font = `bold ${Math.max(10, radius * 0.75)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(symbol, p.x, p.y);
+            }
         }
 
         // hover 오버레이
@@ -413,6 +422,12 @@ function render() {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.fillText(p.name, p.x, p.y + radius + 4);
+        // 상태메시지
+        if (p.status && systemScale > 0.4) {
+            ctx.fillStyle = 'rgba(255,255,255,0.45)';
+            ctx.font = `${Math.max(8, 9 * systemScale)}px 'Noto Sans KR', sans-serif`;
+            ctx.fillText(p.status, p.x, p.y + radius + 4 + Math.max(9, 11 * systemScale) + 2);
+        }
     });
 
     // 말풍선 그리기

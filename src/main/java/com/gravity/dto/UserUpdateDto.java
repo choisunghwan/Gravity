@@ -21,6 +21,10 @@ public class UserUpdateDto {
     @NotBlank(message = "성별을 선택해주세요.")
     private String gender;
 
+    private String planetEmoji;
+    private String planetColor;
+    private String statusMessage;
+
     // 비밀번호 변경 (비어있으면 변경 안 함)
     private String currentPassword;
     private String newPassword;

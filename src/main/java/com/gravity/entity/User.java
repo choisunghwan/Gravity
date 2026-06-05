@@ -37,6 +37,17 @@ public class User {
     @Builder.Default
     private String role = "ROLE_USER";
 
+    @Column(name = "planet_emoji", length = 10)
+    @Builder.Default
+    private String planetEmoji = "🌍";
+
+    @Column(name = "planet_color", length = 20)
+    @Builder.Default
+    private String planetColor = "#4FC3F7";
+
+    @Column(name = "status_message", length = 100)
+    private String statusMessage;
+
     @Column(name = "profile_image", length = 255)
     private String profileImage;
 

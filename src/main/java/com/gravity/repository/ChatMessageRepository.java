@@ -22,4 +22,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     @Transactional
     @Query("DELETE FROM ChatMessage m WHERE m.sender.id = :userId OR m.receiver.id = :userId")
     void deleteAllByUser(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(m) FROM ChatMessage m WHERE ((m.sender.id = :userId AND m.receiver.id = :partnerId) OR (m.sender.id = :partnerId AND m.receiver.id = :userId)) AND m.createdAt > :since")
+    int countRecentMessages(@Param("userId") Long userId, @Param("partnerId") Long partnerId, @Param("since") LocalDateTime since);
 }

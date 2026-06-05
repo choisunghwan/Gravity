@@ -47,10 +47,12 @@
 
         <!-- 중앙 나 표시 -->
         <div class="center-user">
-            <div class="center-planet">
-                <span class="center-emoji">🌍</span>
+            <div class="center-planet" th:style="'box-shadow: 0 0 20px ' + (${currentUser.planetColor} ?: '#4FC3F7') + '66'">
+                <span class="center-emoji" th:text="${currentUser.planetEmoji ?: '🌍'}">🌍</span>
             </div>
             <div class="center-label" th:text="${currentUser.name}">나</div>
+            <div th:if="${currentUser.statusMessage != null and !#strings.isEmpty(currentUser.statusMessage)}"
+                 class="center-status" th:text="${currentUser.statusMessage}"></div>
         </div>
 
         <!-- 범례 -->
@@ -188,7 +190,10 @@
 
 <script th:inline="javascript">
     const compatibilities = /*[(${compatibilitiesJson})]*/ [];
-    const currentUserName = /*[[${currentUser.name}]]*/ '나';
+    const currentUserName  = /*[[${currentUser.name}]]*/ '나';
+    const currentUserEmoji = /*[[${currentUser.planetEmoji ?: '🌍'}]]*/ '🌍';
+    const currentUserColor = /*[[${currentUser.planetColor ?: '#4FC3F7'}]]*/ '#4FC3F7';
+    const currentUserStatus = /*[[${currentUser.statusMessage}]]*/ null;
 </script>
 <script th:src="@{/js/dashboard.js}"></script>
 </body>
