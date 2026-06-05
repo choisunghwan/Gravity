@@ -37,7 +37,7 @@ body.auth-body { overflow-y: auto !important; }
 
 /* ── 대시보드 ────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .universe-wrapper { height: calc(100dvh - 56px); }
+    .universe-wrapper { height: calc(100vh - 56px); height: calc(100dvh - 56px); }
 
     .center-planet { width: 50px; height: 50px; font-size: 24px; }
     .center-label  { font-size: 11px; padding: 2px 8px; }
@@ -165,4 +165,33 @@ body.auth-body { overflow-y: auto !important; }
     .score-list-toggle { display: none !important; }
     .score-list { transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important; }
     .score-list.collapsed { transform: none !important; }
+}
+
+/* ── 초소형 화면 (320px 이하) ────────────────────────────────────── */
+@media (max-width: 380px) {
+    /* 마이페이지 - info-grid 1열 */
+    .info-grid { grid-template-columns: 1fr !important; }
+
+    /* 대시보드 모달 - info-grid 1열 */
+    .modal-info-grid { grid-template-columns: 1fr !important; }
+
+    /* 네비게이션 */
+    .nav-link { font-size: 11px; padding: 5px 6px; }
+    .nav-link.logout { display: none; }
+
+    /* 인증 카드 */
+    .auth-card { padding: 22px 14px; }
+
+    /* 검색 카드 */
+    .user-card-sub { flex-wrap: wrap; gap: 2px; }
+
+    /* 결제 */
+    .couple-preview { flex-direction: column; align-items: center; gap: 6px; }
+    .couple-heart { transform: rotate(90deg); }
+
+    /* 마이페이지 탭 */
+    .tab-btn { font-size: 12px; padding: 8px 10px; }
+
+    /* 채팅 패널 */
+    .chat-panel { right: 0; left: 0; width: 100%; }
 }
