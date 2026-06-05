@@ -51,6 +51,9 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             )
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler((req, res, e) -> res.sendRedirect("/dashboard"))
+            )
             .userDetailsService(userDetailsService)
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/payment/**", "/api/chat/**", "/api/wish/**", "/api/effect/**")
