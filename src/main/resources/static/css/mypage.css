@@ -198,6 +198,10 @@
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .form-input:focus {
