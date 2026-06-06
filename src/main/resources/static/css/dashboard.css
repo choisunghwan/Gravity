@@ -872,6 +872,21 @@ body {
     margin-top: 12px;
 }
 
-@media (max-width: 600px) {
-    .chat-panel { right: 0; width: 100%; border-radius: 12px 12px 0 0; }
+@media (max-width: 768px) {
+    /* 채팅 패널: score list 드로어 핸들(44px) 위에 떠 있도록 */
+    .chat-panel {
+        right: 0;
+        left: 0;
+        width: 100%;
+        border-radius: 12px 12px 0 0;
+        bottom: 44px;
+        z-index: 60;
+    }
+
+    /* score list: 채팅 패널보다 위 (확장 시) */
+    .score-list { z-index: 70 !important; }
+
+    /* 채팅 body 최대 높이 제한 */
+    .chat-body { max-height: 50vh; }
+    .chat-messages { max-height: 34vh; }
 }

@@ -10,21 +10,27 @@ button, input, select, textarea { touch-action: manipulation; }
 @media (max-width: 768px) {
     .navbar { padding: 0 14px; height: 56px; }
     .nav-logo { font-size: 17px; letter-spacing: 2px; }
-    .nav-menu { gap: 2px; }
-    .nav-link { font-size: 12px; padding: 6px 8px; }
+    .nav-menu { gap: 2px; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+                -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav-menu::-webkit-scrollbar { display: none; }
+    .nav-link { font-size: 12px; padding: 6px 7px; white-space: nowrap; flex-shrink: 0; }
     .nav-link.logout { font-size: 11px; }
-    .nav-user { font-size: 12px; gap: 4px; padding: 6px 8px; }
+    .nav-user { font-size: 12px; gap: 4px; padding: 6px 7px; white-space: nowrap; flex-shrink: 0; }
 }
 
+/* 모바일 소형: 이모지만 표시, 텍스트 숨김 */
 @media (max-width: 480px) {
-    .nav-menu {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        flex-wrap: nowrap;
-        gap: 2px;
+    .nav-link:not(.logout):not(.nav-user):not(.notif-link) {
+        max-width: 34px;
+        overflow: hidden;
+        text-overflow: clip;
+        padding: 6px 5px;
+        font-size: 16px;
     }
-    .nav-menu::-webkit-scrollbar { display: none; }
+    .nav-user { max-width: 34px; overflow: hidden; }
+    .nav-user span { display: none; }
+    .nav-link.logout { display: none; }
+    .nav-link.active { background: rgba(124,58,237,0.2); }
 }
 
 @media (max-width: 400px) {
@@ -56,24 +62,24 @@ body.auth-body { overflow-y: auto !important; }
     /* 범례 숨김 */
     .legend { display: none !important; }
 
-    /* 줌 컨트롤 왼쪽에서 오른쪽으로 */
+    /* 줌 컨트롤: 채팅 패널(~100px) + score handle(44px) 위로 */
     .zoom-controls {
         left: auto;
         right: 8px;
         top: auto;
-        bottom: 230px;
+        bottom: 160px;
         transform: none;
     }
 
-    /* 점수 목록 → 하단 고정 드로어 */
+    /* 점수 목록 → 하단 고정 드로어 (채팅 패널 44px 위에) */
     .score-list {
         position: fixed !important;
         top: auto !important;
         right: 0 !important;
-        bottom: 0 !important;
+        bottom: 44px !important;
         left: 0 !important;
         width: 100% !important;
-        max-height: 60vh;
+        max-height: 55vh;
         border-radius: 20px 20px 0 0;
         border-left: none;
         border-right: none;
