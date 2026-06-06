@@ -1211,7 +1211,6 @@ let sheetExpanded = false;
 let sheetActiveTab = 'list';
 
 function initMobileSheet() {
-    // 시트 생성
     const sheet = document.createElement('div');
     sheet.className = 'mobile-sheet';
     sheet.id = 'mobileSheet';
@@ -1230,17 +1229,31 @@ function initMobileSheet() {
     `;
     document.body.appendChild(sheet);
 
-    // 목록 콘텐츠 이동
-    const scoreListEl = document.getElementById('scoreList');
     const sheetContent = document.getElementById('sheetContent');
-    if (scoreListEl) sheetContent.appendChild(scoreListEl);
 
-    // 채팅 body 이동 (숨긴 상태로 추가)
+    // 목록 이동: position/size 리셋 후 시트 안으로
+    const scoreListEl = document.getElementById('scoreList');
+    if (scoreListEl) {
+        scoreListEl.style.cssText = 'position:static;width:100%;max-height:none;border-radius:0;box-shadow:none;padding:0;display:none;';
+        sheetContent.appendChild(scoreListEl);
+    }
+
+    // 채팅 body 이동
     const chatBodyEl = document.getElementById('chatBody');
     if (chatBodyEl) {
         chatBodyEl.style.display = 'none';
         sheetContent.appendChild(chatBodyEl);
     }
+
+    // 캔버스 재측정 (DOM 이동 후 레이아웃 변경 대응)
+    requestAnimationFrame(() => {
+        const newW = canvas.offsetWidth, newH = canvas.offsetHeight;
+        if (newW > 0 && newH > 0 && (canvas.width !== newW || canvas.height !== newH)) {
+            canvas.width  = newW;
+            canvas.height = newH;
+            initPlanets();
+        }
+    });
 }
 
 function toggleMobileSheet() {
@@ -1270,16 +1283,15 @@ function setSheetTab(tab, expand = true) {
     const tabChat = document.getElementById('sheetTabChat');
 
     if (tab === 'list') {
-        if (scoreListEl) scoreListEl.style.display = 'block';
-        if (chatBodyEl)  chatBodyEl.style.display  = 'none';
+        if (scoreListEl) { scoreListEl.style.display = 'block'; scoreListEl.style.visibility = 'visible'; }
+        if (chatBodyEl)  chatBodyEl.style.display = 'none';
         if (tabList) tabList.classList.add('active');
         if (tabChat) tabChat.classList.remove('active');
     } else {
         if (scoreListEl) scoreListEl.style.display = 'none';
-        if (chatBodyEl)  chatBodyEl.style.display  = 'flex';
+        if (chatBodyEl)  { chatBodyEl.style.display = 'flex'; chatBodyEl.style.flexDirection = 'column'; }
         if (tabList) tabList.classList.remove('active');
         if (tabChat) tabChat.classList.add('active');
-        // 채팅 탭 열면 읽음 처리
         unreadCount = 0;
         updateBadge();
     }

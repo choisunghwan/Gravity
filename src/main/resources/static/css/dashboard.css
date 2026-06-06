@@ -561,9 +561,9 @@ body {
 }
 
 @media (max-width: 768px) {
-    /* 원본 패널 숨김 */
-    .score-list  { display: none !important; }
-    .chat-panel  { display: none !important; }
+    /* 원본 패널 숨김 (JS에서 inline style로 제어) */
+    .score-list  { display: none; }
+    .chat-panel  { display: none; }
 
     /* 통합 시트 */
     .mobile-sheet {
