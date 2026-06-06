@@ -555,114 +555,149 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 
-/* ── 모바일 채팅 플로팅 버튼 ────────────────────────────────────── */
-.chat-fab {
+/* ── 모바일 통합 시트 ────────────────────────────────────────────── */
+.mobile-sheet {
     display: none;
 }
 
 @media (max-width: 768px) {
-    /* ── 목록 드로어 ── */
-    .score-list {
-        position: fixed !important;
-        inset: auto 0 0 0 !important;
-        width: 100% !important;
-        max-height: 60vh;
-        border-radius: 24px 24px 0 0 !important;
-        border: none !important;
-        border-top: 1px solid rgba(255,255,255,0.08) !important;
-        background: rgba(8, 8, 24, 0.97) !important;
+    /* 원본 패널 숨김 */
+    .score-list  { display: none !important; }
+    .chat-panel  { display: none !important; }
+
+    /* 통합 시트 */
+    .mobile-sheet {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        left: 0; right: 0;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+        height: 52px; /* 접힌 상태 */
+        max-height: 70vh;
+        background: rgba(8, 8, 24, 0.97);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
-        z-index: 200 !important;
-        padding: 0 0 env(safe-area-inset-bottom, 0px) 0;
-        bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+        border-radius: 20px 20px 0 0;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        z-index: 200;
+        transition: height 0.35s cubic-bezier(0.4,0,0.2,1);
+        overflow: hidden;
     }
 
-    .drawer-handle {
-        display: flex !important;
-        flex-direction: column;
+    .mobile-sheet.expanded {
+        height: 65vh;
+    }
+
+    /* 핸들 */
+    .sheet-drag-handle {
+        display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 10px 0 8px;
+        justify-content: center;
+        height: 52px;
+        flex-shrink: 0;
         cursor: pointer;
+        gap: 10px;
     }
 
-    .drawer-handle::before {
-        content: '';
-        width: 40px;
-        height: 4px;
+    .sheet-drag-pill {
+        width: 36px; height: 4px;
         background: rgba(255,255,255,0.2);
         border-radius: 2px;
-        display: block;
     }
 
-    .score-list-header { padding: 4px 16px 8px; }
-    .score-list-header h3 { font-size: 15px; font-weight: 700; }
-    .score-list-items { padding: 0 12px 12px; overflow-y: auto; }
+    .sheet-drag-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94A3B8;
+    }
 
-    .score-item {
+    /* 탭바 */
+    .sheet-tab-bar {
+        display: flex;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        flex-shrink: 0;
+    }
+
+    .sheet-tab-btn {
+        flex: 1;
+        padding: 12px 0;
+        background: transparent;
+        border: none;
+        color: #64748B;
+        font-size: 14px;
+        font-family: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: color 0.2s;
+        position: relative;
+    }
+
+    .sheet-tab-btn.active {
+        color: #A78BFA;
+        border-bottom: 2px solid #A78BFA;
+    }
+
+    .sheet-tab-badge {
+        background: #EC4899;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 8px;
+        margin-left: 4px;
+        vertical-align: middle;
+    }
+
+    /* 탭 패널 콘텐츠 */
+    .sheet-content {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 목록 패널 아이템 스타일 */
+    .sheet-content .score-list-items { padding: 8px 12px 12px; }
+    .sheet-content .score-list-header { padding: 8px 16px 4px; display: none; }
+
+    .sheet-content .score-item {
         padding: 11px 12px;
         border-radius: 14px;
         margin-bottom: 6px;
         background: rgba(255,255,255,0.04);
         border: 1px solid rgba(255,255,255,0.05);
     }
-    .score-item:active { background: rgba(124,58,237,0.15); }
-    .score-avatar { width: 38px; height: 38px; font-size: 12px; border-radius: 50%; }
-    .score-name { font-size: 14px; font-weight: 600; }
-    .score-num { font-size: 14px; font-weight: 700; color: #A78BFA; }
+    .sheet-content .score-item:active { background: rgba(124,58,237,0.12); }
+    .sheet-content .score-name { font-size: 14px; font-weight: 600; }
+    .sheet-content .score-num  { font-size: 14px; font-weight: 700; color: #A78BFA; }
+    .sheet-content .score-avatar { width: 38px; height: 38px; }
 
-    /* ── 채팅: 플로팅 버튼 ── */
-    .chat-panel {
-        position: fixed !important;
-        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 8px) !important;
-        right: 12px !important;
-        left: auto !important;
-        width: auto !important;
-        min-width: 130px;
-        border-radius: 28px !important;
-        z-index: 250 !important;
-        overflow: hidden;
-        box-shadow: 0 4px 24px rgba(124,58,237,0.4);
-    }
-
-    .chat-panel .chat-body {
-        display: none !important;
-    }
-
-    .chat-header {
-        padding: 10px 16px;
-        border-radius: 28px;
-        font-size: 14px;
-    }
-
-    /* 채팅 전체화면 모드 */
-    .chat-panel.chat-expanded {
-        inset: 0 !important;
-        width: 100% !important;
-        min-width: unset;
-        border-radius: 0 !important;
-        bottom: 0 !important;
-        right: 0 !important;
-        z-index: 500 !important;
-    }
-
-    .chat-panel.chat-expanded .chat-body {
-        display: flex !important;
-        flex: 1;
+    /* 채팅 패널 내부 */
+    .sheet-content .chat-body {
+        display: flex;
         flex-direction: column;
-        max-height: calc(100vh - 52px);
+        height: 100%;
     }
 
-    .chat-panel.chat-expanded .chat-messages {
-        max-height: calc(100vh - 160px);
+    .sheet-content .chat-partners { flex: 1; overflow-y: auto; padding: 8px; }
+    .sheet-content .chat-partner-item { padding: 12px 14px; border-radius: 12px; }
+    .sheet-content .chat-partner-item:active { background: rgba(124,58,237,0.12); }
+
+    .sheet-content .chat-room {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
-    .chat-panel.chat-expanded .chat-header {
-        border-radius: 0;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        padding: 14px 16px;
-        padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    .sheet-content .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        max-height: calc(65vh - 160px);
+        padding: 10px 12px;
+    }
+
+    .sheet-content .chat-input-area {
+        padding: 8px 10px;
+        border-top: 1px solid rgba(255,255,255,0.08);
     }
 
     /* ── 기타 ── */

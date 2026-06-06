@@ -64,18 +64,11 @@
         padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
     }
 
-    /* 대시보드 하단 패널: 탭바 위로 */
-    .score-list {
+    /* 통합 시트: 탭바 바로 위 */
+    .mobile-sheet {
         bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
     }
-    .chat-panel {
-        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 44px) !important;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
-        border-radius: 12px 12px 0 0;
-    }
     .zoom-controls {
-        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 100px) !important;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 120px) !important;
     }
 }

@@ -702,11 +702,8 @@ function showToast(msg) {
 window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resizeCanvas(); render(); });
 
 resizeCanvas();
-// 모바일: 채팅 버튼 텍스트 초기화
-if (isMobile()) {
-    const btn = document.getElementById('chatToggleBtn');
-    if (btn) btn.textContent = '💬';
-}
+// 모바일: 통합 하단 시트 초기화
+if (isMobile()) initMobileSheet();
 // 모바일: 목성 궤도(345)가 화면에 들어오도록 초기 스케일 자동 조정
 if (canvas.width < 768) {
     const autoScale = (canvas.width / 2 * 0.85) / 345;
@@ -725,26 +722,17 @@ if (newId) setTimeout(() => showDetail(parseInt(newId)), 800);
 const isMobile = () => window.innerWidth <= 768;
 
 function toggleChat() {
-    chatOpen = !chatOpen;
-    const panel = document.getElementById('chatPanel');
-    const body  = document.getElementById('chatBody');
-    const btn   = document.getElementById('chatToggleBtn');
-
     if (isMobile()) {
-        if (chatOpen) {
-            panel.classList.add('chat-expanded');
-            btn.textContent = '✕';
-            unreadCount = 0; updateBadge();
-        } else {
-            panel.classList.remove('chat-expanded');
-            btn.textContent = '💬';
-            backToPartners();
-        }
-    } else {
-        body.style.display = chatOpen ? 'flex' : 'none';
-        btn.textContent = chatOpen ? '∨' : '∧';
-        if (chatOpen) { unreadCount = 0; updateBadge(); }
+        // 모바일: 시트 채팅 탭으로 이동
+        setSheetTab('chat');
+        return;
     }
+    chatOpen = !chatOpen;
+    const body = document.getElementById('chatBody');
+    const btn  = document.getElementById('chatToggleBtn');
+    body.style.display = chatOpen ? 'flex' : 'none';
+    btn.textContent = chatOpen ? '∨' : '∧';
+    if (chatOpen) { unreadCount = 0; updateBadge(); }
 }
 
 function openChat(partnerId, partnerName) {
@@ -758,6 +746,8 @@ function openChat(partnerId, partnerName) {
     fetch(`/api/chat/read/${partnerId}`, { method: 'POST' });
     loadMessages();
     startPolling();
+    // 모바일: 채팅 탭으로 전환
+    if (isMobile()) setSheetTab('chat');
 }
 
 function backToPartners() {
@@ -883,11 +873,14 @@ function markSentMessagesAsRead() {
 
 function updateBadge() {
     const badge = document.getElementById('chatBadge');
-    if (unreadCount > 0) {
-        badge.style.display = 'inline-block';
+    if (badge) {
+        badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
         badge.textContent = unreadCount;
-    } else {
-        badge.style.display = 'none';
+    }
+    const mobileBadge = document.getElementById('mobileChatBadge');
+    if (mobileBadge) {
+        mobileBadge.style.display = unreadCount > 0 ? 'inline' : 'none';
+        mobileBadge.textContent = unreadCount;
     }
 }
 
@@ -1210,6 +1203,85 @@ function drawSupernovaEffects() {
         ctx.fillStyle = grad;
         ctx.fill();
         ctx.restore();
+    }
+}
+
+// ── 모바일 통합 시트 ──────────────────────────────────────────────
+let sheetExpanded = false;
+let sheetActiveTab = 'list';
+
+function initMobileSheet() {
+    // 시트 생성
+    const sheet = document.createElement('div');
+    sheet.className = 'mobile-sheet';
+    sheet.id = 'mobileSheet';
+    sheet.innerHTML = `
+        <div class="sheet-drag-handle" id="sheetDragHandle" onclick="toggleMobileSheet()">
+            <div class="sheet-drag-pill"></div>
+            <span class="sheet-drag-label" id="sheetLabel">▲ 내 우주</span>
+        </div>
+        <div class="sheet-tab-bar" id="sheetTabBar" style="display:none">
+            <button class="sheet-tab-btn active" id="sheetTabList" onclick="setSheetTab('list')">🌌 내 우주</button>
+            <button class="sheet-tab-btn" id="sheetTabChat" onclick="setSheetTab('chat')">
+                💬 채팅 <span class="sheet-tab-badge" id="mobileChatBadge" style="display:none">0</span>
+            </button>
+        </div>
+        <div class="sheet-content" id="sheetContent"></div>
+    `;
+    document.body.appendChild(sheet);
+
+    // 목록 콘텐츠 이동
+    const scoreListEl = document.getElementById('scoreList');
+    const sheetContent = document.getElementById('sheetContent');
+    if (scoreListEl) sheetContent.appendChild(scoreListEl);
+
+    // 채팅 body 이동 (숨긴 상태로 추가)
+    const chatBodyEl = document.getElementById('chatBody');
+    if (chatBodyEl) {
+        chatBodyEl.style.display = 'none';
+        sheetContent.appendChild(chatBodyEl);
+    }
+}
+
+function toggleMobileSheet() {
+    const sheet = document.getElementById('mobileSheet');
+    const tabBar = document.getElementById('sheetTabBar');
+    const label  = document.getElementById('sheetLabel');
+    if (!sheet) return;
+
+    sheetExpanded = !sheetExpanded;
+    sheet.classList.toggle('expanded', sheetExpanded);
+    if (tabBar) tabBar.style.display = sheetExpanded ? 'flex' : 'none';
+    if (label)  label.textContent = sheetExpanded ? '▼ 닫기' : '▲ 내 우주';
+
+    if (!sheetExpanded) {
+        // 닫을 때 목록으로 리셋
+        setSheetTab('list', false);
+    }
+}
+
+function setSheetTab(tab, expand = true) {
+    sheetActiveTab = tab;
+    if (expand && !sheetExpanded) toggleMobileSheet();
+
+    const scoreListEl = document.getElementById('scoreList');
+    const chatBodyEl  = document.getElementById('chatBody');
+    const tabList = document.getElementById('sheetTabList');
+    const tabChat = document.getElementById('sheetTabChat');
+
+    if (tab === 'list') {
+        if (scoreListEl) scoreListEl.style.display = 'block';
+        if (chatBodyEl)  chatBodyEl.style.display  = 'none';
+        if (tabList) tabList.classList.add('active');
+        if (tabChat) tabChat.classList.remove('active');
+    } else {
+        if (scoreListEl) scoreListEl.style.display = 'none';
+        if (chatBodyEl)  chatBodyEl.style.display  = 'flex';
+        if (tabList) tabList.classList.remove('active');
+        if (tabChat) tabChat.classList.add('active');
+        // 채팅 탭 열면 읽음 처리
+        unreadCount = 0;
+        updateBadge();
     }
 }
 

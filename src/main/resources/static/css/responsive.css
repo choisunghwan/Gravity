@@ -71,40 +71,8 @@ body.auth-body { overflow-y: auto !important; }
         transform: none;
     }
 
-    /* 점수 목록 → 하단 고정 드로어 */
-    .score-list {
-        position: fixed !important;
-        top: auto !important;
-        right: 0 !important;
-        bottom: 44px !important;
-        left: 0 !important;
-        width: 100% !important;
-        max-height: 55vh;
-        border-radius: 20px 20px 0 0;
-        border-left: none;
-        border-right: none;
-        border-bottom: none;
-        /* 접힌 상태: 핸들만 보임 */
-        transform: translateY(calc(100% - 44px));
-        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
-        z-index: 50;
-        padding-bottom: env(safe-area-inset-bottom, 12px);
-    }
-
-    .score-list.expanded {
-        transform: translateY(0);
-        overflow-y: auto;
-    }
-
-    .drawer-handle {
-        display: block !important;
-        padding: 10px 0 8px;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-sub, #94A3B8);
-        letter-spacing: 0.5px;
-    }
+    /* 드로어 핸들 텍스트 숨김 (모바일 시트가 대체) */
+    .drawer-handle { display: none !important; }
 
     /* 모달 → 하단 시트 */
     .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
