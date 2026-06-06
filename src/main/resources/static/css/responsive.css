@@ -166,9 +166,55 @@ body.auth-body { overflow-y: auto !important; }
     .nav-link:hover   { background: transparent; }
 }
 
-/* ── 아이폰 노치/홈바 ────────────────────────────────────────────── */
-@supports (padding: env(safe-area-inset-bottom)) {
-    .navbar { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+/* ── 아이폰 노치/홈바 + PWA 상태바 ──────────────────────────────── */
+@supports (padding: env(safe-area-inset-top)) {
+    .navbar {
+        padding-top: env(safe-area-inset-top, 0px);
+        height: calc(64px + env(safe-area-inset-top, 0px));
+        padding-left: max(14px, env(safe-area-inset-left));
+        padding-right: max(14px, env(safe-area-inset-right));
+    }
+
+    /* 상단 패딩이 있는 모든 컨테이너 보정 */
+    .page-container {
+        padding-top: calc(90px + env(safe-area-inset-top, 0px));
+    }
+    .feed-container {
+        padding-top: calc(84px + env(safe-area-inset-top, 0px));
+    }
+
+    /* 대시보드 캔버스 높이 */
+    .universe-wrapper {
+        height: calc(100vh - 64px - env(safe-area-inset-top, 0px));
+        height: calc(100dvh - 64px - env(safe-area-inset-top, 0px));
+    }
+
+    /* 하단 홈바 여백 */
+    .chat-panel {
+        bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .score-list {
+        padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* 모바일에서 navbar 높이 보정 */
+@media (max-width: 768px) {
+    @supports (padding: env(safe-area-inset-top)) {
+        .navbar {
+            height: calc(56px + env(safe-area-inset-top, 0px));
+        }
+        .universe-wrapper {
+            height: calc(100vh - 56px - env(safe-area-inset-top, 0px));
+            height: calc(100dvh - 56px - env(safe-area-inset-top, 0px));
+        }
+        .page-container {
+            padding-top: calc(76px + env(safe-area-inset-top, 0px));
+        }
+        .feed-container {
+            padding-top: calc(72px + env(safe-area-inset-top, 0px));
+        }
+    }
 }
 
 /* 데스크탑 전용 토글 버튼은 모바일에서 숨김 */

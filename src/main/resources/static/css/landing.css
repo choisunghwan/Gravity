@@ -30,14 +30,16 @@ body {
 .landing-nav {
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: 64px;
+    height: calc(64px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
     background: rgba(5,5,16,0.85);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(255,255,255,0.08);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 32px;
+    padding-left: 32px;
+    padding-right: 32px;
     z-index: 100;
 }
 
