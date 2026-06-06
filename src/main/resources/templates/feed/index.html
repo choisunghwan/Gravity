@@ -117,16 +117,16 @@
         <form id="editForm" method="post">
             <textarea id="editContent" name="content" class="post-textarea" rows="4" maxlength="500"></textarea>
             <div class="post-char-count"><span id="editCharCount">0</span> / 500</div>
-            <div class="post-write-footer" style="margin-top:12px;">
-                <label class="public-toggle">
+            <div style="margin-top:12px;">
+                <label class="public-toggle" style="margin-bottom:12px;display:flex;">
                     <input type="checkbox" name="isPublic" id="editIsPublic">
                     <span class="toggle-track"></span>
                     <span class="toggle-label" id="editToggleLabel">🔒 연결된 행성만</span>
                 </label>
                 <div style="display:flex;gap:8px;">
                     <button type="button" onclick="closeEditModal()"
-                            style="background:rgba(255,255,255,0.08);border:none;border-radius:10px;padding:10px 16px;color:#94A3B8;font-family:inherit;cursor:pointer;">취소</button>
-                    <button type="submit" class="btn-post" style="margin:0;">저장</button>
+                            style="flex:1;white-space:nowrap;background:rgba(255,255,255,0.08);border:none;border-radius:10px;padding:10px 0;color:#94A3B8;font-family:inherit;cursor:pointer;font-size:14px;">취소</button>
+                    <button type="submit" class="btn-post" style="flex:2;margin:0;">저장</button>
                 </div>
             </div>
         </form>
