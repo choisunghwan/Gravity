@@ -1,0 +1,32 @@
+{
+  "name": "Gravity",
+  "short_name": "Gravity",
+  "description": "서로를 끌어당기는 힘",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#050510",
+  "theme_color": "#7C3AED",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["social", "lifestyle"]
+}
