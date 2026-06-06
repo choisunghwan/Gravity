@@ -45,6 +45,24 @@ public class ChatController {
         return chatService.getNewMessages(me.getId(), since);
     }
 
+    @PostMapping("/read/{partnerId}")
+    public void markAsRead(@PathVariable Long partnerId, Principal principal) {
+        User me = userService.findByUsername(principal.getName()).orElseThrow();
+        chatService.markAsRead(me.getId(), partnerId);
+    }
+
+    @GetMapping("/unread")
+    public long getUnreadCount(Principal principal) {
+        User me = userService.findByUsername(principal.getName()).orElseThrow();
+        return chatService.getUnreadCount(me.getId());
+    }
+
+    @GetMapping("/stats/{partnerId}")
+    public int[] getChatStats(@PathVariable Long partnerId, Principal principal) {
+        User me = userService.findByUsername(principal.getName()).orElseThrow();
+        return chatService.getWeeklyChatCounts(me.getId(), partnerId);
+    }
+
     @GetMapping("/online")
     public List<Long> getOnlinePartners(Principal principal) {
         User me = userService.findByUsername(principal.getName()).orElseThrow();

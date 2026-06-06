@@ -226,13 +226,46 @@
     word-break: break-word;
 }
 
-.post-actions {
+.post-footer {
     margin-top: 12px;
     padding-top: 10px;
     border-top: 1px solid rgba(255,255,255,0.06);
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
 }
+
+.post-my-actions { margin-left: auto; }
+
+.post-avatar-link { text-decoration: none; flex-shrink: 0; }
+.post-author-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #E2E8F0;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.post-author-name:hover { color: #A78BFA; }
+
+.btn-like {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #64748B;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-like:hover { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.2); color: #E2E8F0; }
+.btn-like.liked { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.3); color: #FBBF24; }
+
+.like-icon { font-size: 15px; }
 
 .btn-delete-post {
     background: transparent;

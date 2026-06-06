@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Gravity - 알림</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/notifications.css}">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-logo"><a th:href="@{/dashboard}">🪐 Gravity</a></div>
+    <div class="nav-menu">
+        <a th:href="@{/dashboard}" class="nav-link">🌌 대시보드</a>
+        <a th:href="@{/feed}" class="nav-link">📡 피드</a>
+        <a th:href="@{/notifications}" class="nav-link active">🔔 알림</a>
+        <a th:href="@{/auth/logout}" class="nav-link logout">로그아웃</a>
+    </div>
+</nav>
+
+<div class="page-container">
+    <div class="page-header">
+        <h1>🔔 알림</h1>
+        <p>연결된 행성들의 소식</p>
+    </div>
+
+    <div class="notif-list">
+        <div th:if="${notifications.empty}" class="notif-empty">
+            <div style="font-size:48px;margin-bottom:16px">🌌</div>
+            <p>아직 알림이 없어요</p>
+        </div>
+
+        <div th:each="n : ${notifications}" class="notif-item"
+             th:classappend="${!n.isRead()} ? ' unread' : ''">
+            <div class="notif-icon"
+                 th:text="${n.type == 'CONNECTION' ? '🪐' : (n.type == 'LIKE' ? '🌟' : '📡')}">🔔</div>
+            <div class="notif-body">
+                <div class="notif-message" th:text="${n.message}">메시지</div>
+                <div class="notif-time"
+                     th:text="${#temporals.format(n.createdAt, 'MM.dd HH:mm')}">시간</div>
+            </div>
+            <a th:if="${n.link != null}" th:href="${n.link}" class="notif-arrow">→</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

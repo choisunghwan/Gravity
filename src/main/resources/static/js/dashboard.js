@@ -629,9 +629,30 @@ function showDetail(id) {
             document.getElementById('numerologyScore').textContent = data.numerologyScore || 0;
             document.getElementById('elementScore').textContent = data.elementScore || 0;
 
+            // 채팅 보너스 바
+            const bonusPct = Math.min(100, (data.chatBonus || 0) * 3);
+            const bonusBar = document.getElementById('chatBonusBar');
+            const bonusScore = document.getElementById('chatBonusScore');
+            if (bonusBar) bonusBar.style.width = bonusPct + '%';
+            if (bonusScore) bonusScore.textContent = '+' + (data.chatBonus || 0);
+
+            // D+N 연결 일수
+            const daysEl = document.getElementById('modalDays');
+            if (daysEl && data.createdAt) {
+                const connected = new Date(data.createdAt);
+                const diff = Math.floor((Date.now() - connected.getTime()) / 86400000);
+                daysEl.textContent = 'D+' + diff;
+            }
+
             const modal = document.getElementById('detailModal');
             modal.classList.add('active');
             modal._currentData = data;
+
+            // 주별 채팅 통계 차트
+            fetch(`/api/chat/stats/${data.partnerId}`)
+                .then(r => r.json())
+                .then(counts => drawWeeklyChart(counts))
+                .catch(() => {});
         })
         .catch(() => showToast('상세 정보를 불러오지 못했습니다.'));
 }
@@ -713,6 +734,7 @@ function openChat(partnerId, partnerName) {
     document.getElementById('chatRoomTitle').textContent = partnerName;
     document.getElementById('chatTitle').textContent     = partnerName;
     document.getElementById('chatMessages').innerHTML    = '';
+    fetch(`/api/chat/read/${partnerId}`, { method: 'POST' });
     loadMessages();
     startPolling();
 }
@@ -790,7 +812,9 @@ function appendMessage(m, animate = true) {
         + (animate ? ' chat-msg-new' : '');
     div.dataset.senderId = m.senderId;
     div.dataset.timeMin = m.createdAt;
-    div.innerHTML = `<span class="chat-bubble">${escapeHtml(m.message)}</span><span class="chat-time">${m.createdAt}</span>`;
+    div.dataset.msgId = m.id;
+    const readMark = m.mine ? `<span class="chat-read-mark${m.read ? ' read' : ''}">읽음</span>` : '';
+    div.innerHTML = `<span class="chat-bubble">${escapeHtml(m.message)}</span>${readMark}<span class="chat-time">${m.createdAt}</span>`;
     box.appendChild(div);
 }
 
@@ -814,19 +838,26 @@ function pollNewMessages() {
             if (!msgs.length) return;
             lastMessageTime = msgs[msgs.length - 1].createdAtIso || nowKST();
             msgs.forEach(m => {
-                // 상대 행성 → 내 지구로 이모지 날아오기
                 triggerEmojiParticle(m.senderId, extractEmoji(m.message), true);
                 triggerSpeechBubble(m.senderId, m.message);
                 if (currentPartnerId && m.senderId === currentPartnerId) {
                     appendMessage(m);
                     const box = document.getElementById('chatMessages');
                     box.scrollTop = box.scrollHeight;
+                    // 상대가 메시지를 보냈다 = 내 이전 메시지들을 읽었음
+                    markSentMessagesAsRead();
                 } else {
                     unreadCount++;
                     updateBadge();
                 }
             });
         });
+}
+
+function markSentMessagesAsRead() {
+    document.querySelectorAll('#chatMessages .chat-msg-mine .chat-read-mark').forEach(el => {
+        el.classList.add('read');
+    });
 }
 
 function updateBadge() {
@@ -1159,6 +1190,39 @@ function drawSupernovaEffects() {
         ctx.fill();
         ctx.restore();
     }
+}
+
+function drawWeeklyChart(counts) {
+    const cvs = document.getElementById('weeklyChartCanvas');
+    if (!cvs) return;
+    const c = cvs.getContext('2d');
+    const W = cvs.width, H = cvs.height;
+    c.clearRect(0, 0, W, H);
+    const max = Math.max(...counts, 1);
+    const barW = W / counts.length * 0.55;
+    const gap  = W / counts.length;
+    const labels = ['3주전','2주전','1주전','이번주'];
+    counts.forEach((v, i) => {
+        const bh = (v / max) * (H - 28);
+        const x  = i * gap + gap * 0.225;
+        const y  = H - 20 - bh;
+        const grad = c.createLinearGradient(x, y, x, H - 20);
+        grad.addColorStop(0, '#A78BFA');
+        grad.addColorStop(1, '#7C3AED44');
+        c.fillStyle = grad;
+        c.beginPath();
+        c.roundRect(x, y, barW, bh, 3);
+        c.fill();
+        c.fillStyle = 'rgba(255,255,255,0.5)';
+        c.font = '9px sans-serif';
+        c.textAlign = 'center';
+        c.fillText(labels[i], x + barW / 2, H - 4);
+        if (v > 0) {
+            c.fillStyle = 'rgba(255,255,255,0.8)';
+            c.font = 'bold 10px sans-serif';
+            c.fillText(v, x + barW / 2, y - 4);
+        }
+    });
 }
 
 // 전역 노출

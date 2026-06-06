@@ -25,6 +25,7 @@ public class CompatibilityService {
     private final CompatibilityResultRepository compatibilityResultRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ClaudeService claudeService;
+    private final NotificationService notificationService;
 
     // 이미 등록된 궁합인지 확인
     public boolean alreadyExists(User user, User partner) {
@@ -60,7 +61,12 @@ public class CompatibilityService {
                 .orderId(orderId)
                 .build();
 
-        return compatibilityResultRepository.save(result);
+        CompatibilityResult saved = compatibilityResultRepository.save(result);
+
+        // 상대방에게 연결 알림
+        notificationService.createConnectionNotification(partner, user);
+
+        return saved;
     }
 
     public List<CompatibilityResultDto> getMyCompatibilities(User user) {

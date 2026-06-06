@@ -25,4 +25,15 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     @Query("SELECT COUNT(m) FROM ChatMessage m WHERE ((m.sender.id = :userId AND m.receiver.id = :partnerId) OR (m.sender.id = :partnerId AND m.receiver.id = :userId)) AND m.createdAt > :since")
     int countRecentMessages(@Param("userId") Long userId, @Param("partnerId") Long partnerId, @Param("since") LocalDateTime since);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ChatMessage m SET m.isRead = true WHERE m.receiver.id = :userId AND m.sender.id = :partnerId AND m.isRead = false")
+    void markAsRead(@Param("userId") Long userId, @Param("partnerId") Long partnerId);
+
+    @Query("SELECT COUNT(m) FROM ChatMessage m WHERE m.receiver.id = :userId AND m.isRead = false")
+    long countUnread(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(m) FROM ChatMessage m WHERE ((m.sender.id = :u1 AND m.receiver.id = :u2) OR (m.sender.id = :u2 AND m.receiver.id = :u1)) AND m.createdAt BETWEEN :start AND :end")
+    int countMessagesBetween(@Param("u1") Long u1, @Param("u2") Long u2, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

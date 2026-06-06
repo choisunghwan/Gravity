@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title th:text="'Gravity - ' + ${planet.name} + ' 행성'">Gravity - 행성</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/planet.css}">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-logo"><a th:href="@{/dashboard}">🪐 Gravity</a></div>
+    <div class="nav-menu">
+        <a th:href="@{/dashboard}" class="nav-link">🌌 대시보드</a>
+        <a th:href="@{/feed}" class="nav-link">📡 피드</a>
+        <a th:href="@{/notifications}" class="nav-link notif-link">
+            🔔
+            <span th:if="${unreadNotifCount > 0}" class="notif-badge" th:text="${unreadNotifCount}"></span>
+        </a>
+        <a th:href="@{/auth/logout}" class="nav-link logout">로그아웃</a>
+    </div>
+</nav>
+
+<div class="page-container">
+    <div class="planet-profile-card">
+
+        <!-- 행성 헤더 -->
+        <div class="planet-hero"
+             th:style="'background: radial-gradient(circle at 30% 40%, ' + (${planet.planetColor} ?: '#4FC3F7') + '22, transparent 60%)'">
+            <div class="planet-big" th:style="'background: radial-gradient(circle at 35% 35%, ' + (${planet.planetColor} ?: '#4FC3F7') + ', ' + (${planet.planetColor} ?: '#4FC3F7') + '88); box-shadow: 0 0 40px ' + (${planet.planetColor} ?: '#4FC3F7') + '44'">
+                <span th:text="${planet.planetEmoji ?: '🌍'}">🌍</span>
+            </div>
+            <div class="planet-hero-info">
+                <h1 th:text="${planet.name}">행성 이름</h1>
+                <div class="planet-username" th:text="'@' + ${planet.username}">@아이디</div>
+                <div th:if="${planet.statusMessage != null and !#strings.isEmpty(planet.statusMessage)}"
+                     class="planet-status" th:text="${planet.statusMessage}"></div>
+            </div>
+        </div>
+
+        <!-- 내 행성일 때 -->
+        <div th:if="${isMe}" class="action-row">
+            <a th:href="@{/mypage}" class="btn-action">⚙️ 행성 설정</a>
+        </div>
+
+        <!-- 연결 안 된 경우 -->
+        <div th:if="${!isMe and !isConnected}" class="action-row">
+            <a th:href="@{/search}" class="btn-action">🔍 행성 추가하기</a>
+        </div>
+
+        <!-- 연결 정보 -->
+        <div th:if="${isConnected and connection != null}" class="connection-card">
+            <div class="connection-label">⚡ 끌림 지수</div>
+            <div class="connection-score" th:text="${connection.score} + '점'">0점</div>
+            <div class="connection-orbit" th:text="'궤도: ' + ${connection.scoreLabel}">궤도</div>
+            <div th:if="${daysSince != null}" class="connection-days">
+                🛸 연결 <span th:text="'D+' + ${daysSince}">D+0</span>
+            </div>
+        </div>
+
+        <!-- 기본 정보 -->
+        <div class="planet-info-grid">
+            <div class="planet-info-item">
+                <span class="info-label">🐾 띠</span>
+                <span class="info-value" th:text="${planet.zodiac}">-</span>
+            </div>
+            <div class="planet-info-item">
+                <span class="info-label">🔢 생명수</span>
+                <span class="info-value" th:text="${planet.lifePathNumber}">-</span>
+            </div>
+            <div class="planet-info-item">
+                <span class="info-label">⚧ 성별</span>
+                <span class="info-value" th:text="${planet.gender == 'MALE' ? '♂ 남성' : '♀ 여성'}">-</span>
+            </div>
+            <div class="planet-info-item">
+                <span class="info-label">📅 가입일</span>
+                <span class="info-value"
+                      th:text="${planet.createdAt != null ? #temporals.format(planet.createdAt, 'yyyy.MM.dd') : '-'}">-</span>
+            </div>
+        </div>
+
+        <!-- 포스트 목록 -->
+        <div class="planet-posts">
+            <h3 class="posts-title">📡 신호 기록</h3>
+            <div th:if="${posts.empty}" class="posts-empty">아직 신호가 없어요.</div>
+            <div th:each="post : ${posts}" class="mini-post-card">
+                <div class="mini-post-header">
+                    <span th:if="${post.isPublic()}" class="badge-public">🌐</span>
+                    <span th:if="${!post.isPublic()}" class="badge-private">🔒</span>
+                    <span class="mini-post-time"
+                          th:text="${#temporals.format(post.createdAt, 'MM.dd HH:mm')}">시간</span>
+                    <span class="mini-post-likes">🌟 <span th:text="${post.likeCount}">0</span></span>
+                </div>
+                <div class="mini-post-content" th:text="${post.content}">내용</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

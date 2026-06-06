@@ -14,4 +14,5 @@ public class ChatMessageDto {
     private String createdAt;
     private String createdAtIso;
     private boolean mine;
+    private boolean read;
 }

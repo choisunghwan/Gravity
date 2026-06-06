@@ -6,33 +6,39 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @Entity
-@Table(name = "chat_messages")
+@Table(name = "notifications")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatMessage {
+public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
-    private User sender;
+    @JoinColumn(name = "recipient_id", nullable = false)
+    private User recipient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id", nullable = false)
-    private User receiver;
+    @JoinColumn(name = "from_user_id")
+    private User fromUser;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, length = 20)
+    private String type; // POST, CONNECTION, LIKE
+
+    @Column(nullable = false, length = 200)
     private String message;
+
+    @Column(length = 255)
+    private String link;
 
     @Column(name = "is_read", nullable = false)
     @Builder.Default
     private boolean isRead = false;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist

@@ -1,6 +1,6 @@
 package com.gravity.controller;
 
-import com.gravity.entity.Post;
+import com.gravity.dto.PostDto;
 import com.gravity.entity.User;
 import com.gravity.service.PostService;
 import com.gravity.service.UserService;
@@ -25,7 +25,7 @@ public class FeedController {
     @GetMapping
     public String feed(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
-        List<Post> posts = postService.getFeedPosts(user);
+        List<PostDto> posts = postService.getFeedPosts(user);
         model.addAttribute("currentUser", user);
         model.addAttribute("posts", posts);
         return "feed/index";
@@ -43,6 +43,14 @@ public class FeedController {
         User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
         postService.createPost(user, content.trim(), isPublic);
         return "redirect:/feed";
+    }
+
+    @PostMapping("/like/{id}")
+    @ResponseBody
+    public long toggleLike(@PathVariable Long id,
+                           @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
+        return postService.toggleLike(id, user);
     }
 
     @PostMapping("/delete/{id}")

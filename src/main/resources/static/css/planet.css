@@ -1,0 +1,166 @@
+.planet-profile-card {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.planet-hero {
+    border-radius: 24px;
+    padding: 36px 28px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(15,15,40,0.9);
+}
+
+.planet-big {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    flex-shrink: 0;
+}
+
+.planet-hero-info h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+
+.planet-username { font-size: 13px; color: #64748B; margin-bottom: 6px; }
+
+.planet-status {
+    font-size: 13px;
+    color: #94A3B8;
+    background: rgba(255,255,255,0.05);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.action-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.btn-action {
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(167,139,250,0.3);
+    color: #A78BFA;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.btn-action:hover { background: rgba(124,58,237,0.25); }
+
+.connection-card {
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 18px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.connection-label { font-size: 13px; color: #94A3B8; }
+
+.connection-score {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #A78BFA, #EC4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.connection-orbit { font-size: 13px; color: #64748B; }
+
+.connection-days {
+    margin-left: auto;
+    font-size: 13px;
+    color: #A78BFA;
+    background: rgba(124,58,237,0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.planet-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.planet-info-item {
+    background: rgba(15,15,40,0.9);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-label { font-size: 11px; color: #475569; }
+.info-value { font-size: 15px; font-weight: 600; color: #E2E8F0; }
+
+.planet-posts { }
+
+.posts-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #94A3B8;
+    margin-bottom: 14px;
+}
+
+.posts-empty {
+    text-align: center;
+    color: #334155;
+    padding: 32px;
+    font-size: 14px;
+}
+
+.mini-post-card {
+    background: rgba(15,15,40,0.9);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+}
+.mini-post-card:hover { border-color: rgba(167,139,250,0.2); }
+
+.mini-post-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.badge-public { color: #34D399; }
+.badge-private { color: #A78BFA; }
+
+.mini-post-time { color: #475569; flex: 1; }
+.mini-post-likes { color: #94A3B8; }
+
+.mini-post-content {
+    font-size: 14px;
+    color: #CBD5E1;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@media (max-width: 480px) {
+    .planet-hero { flex-direction: column; text-align: center; padding: 24px 20px; }
+    .planet-info-grid { grid-template-columns: 1fr 1fr; }
+    .connection-card { flex-direction: column; gap: 10px; }
+    .connection-days { margin-left: 0; }
+}

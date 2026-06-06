@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity - 서로를 끌어당기는 힘</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/landing.css}">
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<nav class="landing-nav">
+    <div class="nav-logo">🪐 Gravity</div>
+    <div class="nav-actions">
+        <a th:href="@{/auth/login}" class="btn-nav-login">로그인</a>
+        <a th:href="@{/auth/register}" class="btn-nav-register">시작하기</a>
+    </div>
+</nav>
+
+<!-- 히어로 -->
+<section class="hero">
+    <div class="hero-planets">
+        <div class="orbit orbit-1"><div class="planet p1">🌍</div></div>
+        <div class="orbit orbit-2"><div class="planet p2">🪐</div></div>
+        <div class="orbit orbit-3"><div class="planet p3">⭐</div></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-badge">✨ 새로운 소셜 우주</div>
+        <h1 class="hero-title">서로를 끌어당기는 힘<br><span class="gradient-text">Gravity</span></h1>
+        <p class="hero-sub">당신은 하나의 행성입니다.<br>가까운 행성일수록 더 강한 끌림을 느끼죠.</p>
+        <div class="hero-cta">
+            <a th:href="@{/auth/register}" class="btn-primary-lg">내 행성 만들기 🚀</a>
+            <a th:href="@{/auth/login}" class="btn-secondary-lg">로그인</a>
+        </div>
+    </div>
+</section>
+
+<!-- 기능 소개 -->
+<section class="features">
+    <h2 class="section-title">Gravity의 우주에서</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🌌</div>
+            <h3>나만의 우주</h3>
+            <p>끌림 지수에 따라 행성이 궤도를 형성해요. 가까울수록 더 잘 맞는 사람.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <h3>행성 간 통신</h3>
+            <p>연결된 행성과 실시간 채팅으로 신호를 주고받아요.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📡</div>
+            <h3>신호 피드</h3>
+            <p>연결된 행성들의 소식을 피드에서 확인하고 끌림을 보내보세요.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🪐</div>
+            <h3>행성 꾸미기</h3>
+            <p>나만의 색상과 이모지로 행성을 꾸미고 상태 메시지를 남겨보세요.</p>
+        </div>
+    </div>
+</section>
+
+<!-- 끌림 지수 -->
+<section class="score-section">
+    <div class="score-content">
+        <h2>끌림 지수란?</h2>
+        <p>띠 궁합, 수비학, 오행을 기반으로 두 행성의 인력을 계산해요.<br>채팅을 많이 나눌수록 궤도가 더 가까워져요.</p>
+        <div class="score-bars">
+            <div class="score-bar-item">
+                <span>띠 점수</span>
+                <div class="bar-track"><div class="bar-fill" style="width:85%"></div></div>
+                <span>85</span>
+            </div>
+            <div class="score-bar-item">
+                <span>수비학</span>
+                <div class="bar-track"><div class="bar-fill" style="width:72%"></div></div>
+                <span>72</span>
+            </div>
+            <div class="score-bar-item">
+                <span>오행</span>
+                <div class="bar-track"><div class="bar-fill" style="width:90%"></div></div>
+                <span>90</span>
+            </div>
+            <div class="score-bar-item highlight">
+                <span>🌟 채팅 보너스</span>
+                <div class="bar-track"><div class="bar-fill" style="width:60%"></div></div>
+                <span>+15</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <h2>당신의 행성을 찾아보세요</h2>
+    <p>지금 바로 우주에 합류하세요</p>
+    <a th:href="@{/auth/register}" class="btn-primary-lg">무료로 시작하기 ✨</a>
+</section>
+
+<footer class="landing-footer">
+    <p>© 2026 Gravity · Developed by <strong>CSH LAB</strong></p>
+</footer>
+
+<script>
+    const starsEl = document.getElementById('stars');
+    for (let i = 0; i < 200; i++) {
+        const s = document.createElement('div');
+        s.className = 'star';
+        s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${Math.random()*2+1}px;height:${Math.random()*2+1}px;animation-delay:${Math.random()*4}s;animation-duration:${Math.random()*3+2}s`;
+        starsEl.appendChild(s);
+    }
+</script>
+</body>
+</html>

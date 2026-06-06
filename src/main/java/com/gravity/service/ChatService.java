@@ -52,6 +52,28 @@ public class ChatService {
                 .stream().map(m -> toDto(m, userId)).collect(Collectors.toList());
     }
 
+    @Transactional
+    public void markAsRead(Long userId, Long partnerId) {
+        chatMessageRepository.markAsRead(userId, partnerId);
+    }
+
+    @Transactional(readOnly = true)
+    public long getUnreadCount(Long userId) {
+        return chatMessageRepository.countUnread(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public int[] getWeeklyChatCounts(Long u1, Long u2) {
+        LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
+        int[] counts = new int[4];
+        for (int i = 0; i < 4; i++) {
+            LocalDateTime end = now.minusWeeks(i);
+            LocalDateTime start = now.minusWeeks(i + 1);
+            counts[3 - i] = chatMessageRepository.countMessagesBetween(u1, u2, start, end);
+        }
+        return counts;
+    }
+
     private ChatMessageDto toDto(ChatMessage m, Long currentUserId) {
         return ChatMessageDto.builder()
                 .id(m.getId())
@@ -62,6 +84,7 @@ public class ChatService {
                 .createdAt(m.getCreatedAt().format(FMT))
                 .createdAtIso(m.getCreatedAt().format(ISO_FMT))
                 .mine(m.getSender().getId().equals(currentUserId))
+                .read(m.isRead())
                 .build();
     }
 }

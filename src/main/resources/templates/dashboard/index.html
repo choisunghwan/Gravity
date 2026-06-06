@@ -19,6 +19,12 @@
     <div class="nav-menu">
         <a th:href="@{/feed}" class="nav-link">📡 피드</a>
         <a th:href="@{/search}" class="nav-link">🔍 행성 추가</a>
+        <a th:href="@{/notifications}" class="nav-link notif-link" style="position:relative;">
+            🔔<span th:if="${unreadNotifCount > 0}"
+                    th:text="${unreadNotifCount}"
+                    style="position:absolute;top:0;right:0;background:#EC4899;color:white;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;"
+            ></span>
+        </a>
         <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}" class="nav-link" style="color:#A78BFA;">⚙️ 관리자</a>
         <a th:href="@{/mypage}" class="nav-user nav-link" style="-webkit-text-fill-color:inherit;">
             <img th:if="${currentUser.profileImage != null}"
@@ -132,11 +138,21 @@
                 <div class="mini-bar-wrap"><div class="mini-bar" id="elementBar"></div></div>
                 <span id="elementScore">0</span>
             </div>
+            <div class="modal-score-item" style="color:#A78BFA;">
+                <span>💬 채팅 보너스</span>
+                <div class="mini-bar-wrap"><div class="mini-bar" id="chatBonusBar" style="background:linear-gradient(90deg,#A78BFA,#EC4899)"></div></div>
+                <span id="chatBonusScore">+0</span>
+            </div>
         </div>
         <div class="modal-info-grid">
             <div><span class="info-label">띠</span><span id="modalZodiac">-</span></div>
             <div><span class="info-label">성별</span><span id="modalGender">-</span></div>
             <div><span class="info-label">등록일</span><span id="modalDate">-</span></div>
+            <div><span class="info-label">연결 기간</span><span id="modalDays" style="color:#A78BFA;font-weight:700;">-</span></div>
+        </div>
+        <div class="modal-weekly-chart">
+            <div style="font-size:12px;color:#64748B;margin-bottom:8px;">📊 주별 채팅 횟수</div>
+            <canvas id="weeklyChartCanvas" width="260" height="80" style="width:100%;height:80px;"></canvas>
         </div>
         <div class="modal-analysis">
             <h3>✨ 궤도 분석</h3>

@@ -23,8 +23,9 @@ public class DashboardController {
     private final CompatibilityService compatibilityService;
 
     @GetMapping("/")
-    public String root() {
-        return "redirect:/dashboard";
+    public String root(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails != null) return "redirect:/dashboard";
+        return "landing/index";
     }
 
     @GetMapping("/dashboard")
