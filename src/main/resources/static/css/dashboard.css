@@ -555,58 +555,133 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 
-/* ── 반응형 ─────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-    .navbar { padding: 0 14px; }
-    .nav-logo { font-size: 16px; }
-    .nav-link { font-size: 12px; padding: 4px 8px; }
-    .nav-user { font-size: 12px; }
+/* ── 모바일 채팅 플로팅 버튼 ────────────────────────────────────── */
+.chat-fab {
+    display: none;
+}
 
-    /* 점수 목록: 하단 고정 슬라이드 패널 */
+@media (max-width: 768px) {
+    /* ── 목록 드로어 ── */
     .score-list {
-        position: fixed;
-        top: auto;
-        bottom: 0;
-        right: 0;
-        left: 0;
-        width: 100%;
-        max-height: 38vh;
-        border-radius: 20px 20px 0 0;
-        border-bottom: none;
-        z-index: 50;
+        position: fixed !important;
+        inset: auto 0 0 0 !important;
+        width: 100% !important;
+        max-height: 60vh;
+        border-radius: 24px 24px 0 0 !important;
+        border: none !important;
+        border-top: 1px solid rgba(255,255,255,0.08) !important;
+        background: rgba(8, 8, 24, 0.97) !important;
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        z-index: 200 !important;
+        padding: 0 0 env(safe-area-inset-bottom, 0px) 0;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
     }
 
-    /* 범례 숨김 (모바일엔 공간 부족) */
+    .drawer-handle {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 0 8px;
+        cursor: pointer;
+    }
+
+    .drawer-handle::before {
+        content: '';
+        width: 40px;
+        height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        display: block;
+    }
+
+    .score-list-header { padding: 4px 16px 8px; }
+    .score-list-header h3 { font-size: 15px; font-weight: 700; }
+    .score-list-items { padding: 0 12px 12px; overflow-y: auto; }
+
+    .score-item {
+        padding: 11px 12px;
+        border-radius: 14px;
+        margin-bottom: 6px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .score-item:active { background: rgba(124,58,237,0.15); }
+    .score-avatar { width: 38px; height: 38px; font-size: 12px; border-radius: 50%; }
+    .score-name { font-size: 14px; font-weight: 600; }
+    .score-num { font-size: 14px; font-weight: 700; color: #A78BFA; }
+
+    /* ── 채팅: 플로팅 버튼 ── */
+    .chat-panel {
+        position: fixed !important;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+        right: 12px !important;
+        left: auto !important;
+        width: auto !important;
+        min-width: 130px;
+        border-radius: 28px !important;
+        z-index: 250 !important;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(124,58,237,0.4);
+    }
+
+    .chat-panel .chat-body {
+        display: none !important;
+    }
+
+    .chat-header {
+        padding: 10px 16px;
+        border-radius: 28px;
+        font-size: 14px;
+    }
+
+    /* 채팅 전체화면 모드 */
+    .chat-panel.chat-expanded {
+        inset: 0 !important;
+        width: 100% !important;
+        min-width: unset;
+        border-radius: 0 !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        z-index: 500 !important;
+    }
+
+    .chat-panel.chat-expanded .chat-body {
+        display: flex !important;
+        flex: 1;
+        flex-direction: column;
+        max-height: calc(100vh - 52px);
+    }
+
+    .chat-panel.chat-expanded .chat-messages {
+        max-height: calc(100vh - 160px);
+    }
+
+    .chat-panel.chat-expanded .chat-header {
+        border-radius: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding: 14px 16px;
+        padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    }
+
+    /* ── 기타 ── */
     .legend { display: none; }
+    .center-planet { width: 50px; height: 50px; font-size: 24px; }
+    .center-label { font-size: 11px; }
 
-    /* 중앙 행성 크기 축소 */
-    .center-planet { width: 52px; height: 52px; font-size: 24px; }
-    .center-label { font-size: 12px; }
-
-    /* 모달 */
     .modal-card {
         padding: 20px;
-        border-radius: 20px 20px 0 0;
+        border-radius: 24px 24px 0 0;
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        max-height: 85vh;
-        width: 100%;
-        max-width: 100%;
+        bottom: 0; left: 0; right: 0;
+        max-height: 88vh;
+        width: 100%; max-width: 100%;
         margin: 0;
     }
     .modal-overlay { align-items: flex-end; }
     .modal-total-score { font-size: 48px; }
     .modal-info-grid { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 480px) {
-    .nav-menu { gap: 6px; }
-    .score-list h3 { font-size: 12px; }
-    .score-item { padding: 8px 6px; }
-    .score-name { font-size: 12px; }
-    .score-num { font-size: 12px; }
 }
 
 /* ── 줌 컨트롤 ───────────────────────────────────────────────────── */

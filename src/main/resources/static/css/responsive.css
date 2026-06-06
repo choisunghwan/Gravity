@@ -71,7 +71,7 @@ body.auth-body { overflow-y: auto !important; }
         transform: none;
     }
 
-    /* 점수 목록 → 하단 고정 드로어 (채팅 패널 44px 위에) */
+    /* 점수 목록 → 하단 고정 드로어 */
     .score-list {
         position: fixed !important;
         top: auto !important;

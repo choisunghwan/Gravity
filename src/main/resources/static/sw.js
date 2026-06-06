@@ -1,4 +1,4 @@
-const CACHE = 'gravity-v4';
+const CACHE = 'gravity-v5';
 const STATIC = [
     '/css/common.css',
     '/css/dashboard.css',

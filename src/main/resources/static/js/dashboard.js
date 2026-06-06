@@ -702,6 +702,11 @@ function showToast(msg) {
 window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resizeCanvas(); render(); });
 
 resizeCanvas();
+// 모바일: 채팅 버튼 텍스트 초기화
+if (isMobile()) {
+    const btn = document.getElementById('chatToggleBtn');
+    if (btn) btn.textContent = '💬';
+}
 // 모바일: 목성 궤도(345)가 화면에 들어오도록 초기 스케일 자동 조정
 if (canvas.width < 768) {
     const autoScale = (canvas.width / 2 * 0.85) / 345;
@@ -717,13 +722,29 @@ if (newId) setTimeout(() => showDetail(parseInt(newId)), 800);
 
 // ── 채팅 ────────────────────────────────────────────────────────────
 
+const isMobile = () => window.innerWidth <= 768;
+
 function toggleChat() {
     chatOpen = !chatOpen;
-    const body = document.getElementById('chatBody');
-    const btn  = document.getElementById('chatToggleBtn');
-    body.style.display = chatOpen ? 'flex' : 'none';
-    btn.textContent = chatOpen ? '∨' : '∧';
-    if (chatOpen) { unreadCount = 0; updateBadge(); }
+    const panel = document.getElementById('chatPanel');
+    const body  = document.getElementById('chatBody');
+    const btn   = document.getElementById('chatToggleBtn');
+
+    if (isMobile()) {
+        if (chatOpen) {
+            panel.classList.add('chat-expanded');
+            btn.textContent = '✕';
+            unreadCount = 0; updateBadge();
+        } else {
+            panel.classList.remove('chat-expanded');
+            btn.textContent = '💬';
+            backToPartners();
+        }
+    } else {
+        body.style.display = chatOpen ? 'flex' : 'none';
+        btn.textContent = chatOpen ? '∨' : '∧';
+        if (chatOpen) { unreadCount = 0; updateBadge(); }
+    }
 }
 
 function openChat(partnerId, partnerName) {
