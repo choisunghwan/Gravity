@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="bottom-nav(activePage)" class="bottom-nav">
+    <a th:href="@{/dashboard}"
+       th:class="'bottom-nav-item' + (${activePage == 'dashboard'} ? ' active' : '')">
+        <span class="bottom-nav-icon">🌌</span>
+        <span class="bottom-nav-label">홈</span>
+    </a>
+    <a th:href="@{/feed}"
+       th:class="'bottom-nav-item' + (${activePage == 'feed'} ? ' active' : '')">
+        <span class="bottom-nav-icon">📡</span>
+        <span class="bottom-nav-label">피드</span>
+    </a>
+    <a th:href="@{/search}"
+       th:class="'bottom-nav-item' + (${activePage == 'search'} ? ' active' : '')">
+        <span class="bottom-nav-icon">🔍</span>
+        <span class="bottom-nav-label">추가</span>
+    </a>
+    <a th:href="@{/notifications}"
+       th:class="'bottom-nav-item' + (${activePage == 'notifications'} ? ' active' : '')"
+       style="position:relative;">
+        <span class="bottom-nav-icon">🔔</span>
+        <span th:if="${unreadNotifCount > 0}" class="bottom-nav-badge" th:text="${unreadNotifCount}"></span>
+        <span class="bottom-nav-label">알림</span>
+    </a>
+    <a th:href="@{/mypage}"
+       th:class="'bottom-nav-item' + (${activePage == 'mypage'} ? ' active' : '')">
+        <span class="bottom-nav-icon">👤</span>
+        <span class="bottom-nav-label">내 행성</span>
+    </a>
+</nav>
+</body>
+</html>
