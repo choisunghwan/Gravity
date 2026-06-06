@@ -707,9 +707,17 @@ function showToast(msg) {
 window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resizeCanvas(); render(); });
 
 resizeCanvas();
-// 모바일: 통합 하단 시트 초기화
 if (isMobile()) initMobileSheet();
 render();
+
+// iOS: 첫 레이아웃 확정 후 캔버스 재초기화 (offsetWidth가 처음엔 0으로 읽히는 문제)
+if (isMobile()) {
+    setTimeout(() => {
+        cancelAnimationFrame(animFrame);
+        resizeCanvas();
+        render();
+    }, 150);
+}
 updateZoomButtons();
 scheduleShootingStar();
 
