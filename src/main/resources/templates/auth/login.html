@@ -36,7 +36,10 @@
             </div>
             <div class="remember-row">
                 <label class="remember-label">
-                    <input type="checkbox" id="rememberMe"> 아이디 저장
+                    <input type="checkbox" id="rememberMeLocal"> 아이디 저장
+                </label>
+                <label class="remember-label">
+                    <input type="checkbox" name="rememberMe" id="rememberMe"> 로그인 유지 (30일)
                 </label>
             </div>
             <button type="submit" class="btn-primary">로그인</button>
@@ -63,7 +66,7 @@
 <script>
     // 아이디 저장
     const usernameInput = document.getElementById('username');
-    const rememberCheck = document.getElementById('rememberMe');
+    const rememberCheck = document.getElementById('rememberMeLocal');
     const saved = localStorage.getItem('savedUsername');
     if (saved) { usernameInput.value = saved; rememberCheck.checked = true; }
 

@@ -44,6 +44,11 @@ public class SecurityConfig {
                 .failureUrl("/auth/login?error=true")
                 .permitAll()
             )
+            .rememberMe(rm -> rm
+                .rememberMeParameter("rememberMe")
+                .tokenValiditySeconds(60 * 60 * 24 * 30) // 30일
+                .userDetailsService(userDetailsService)
+            )
             .logout(logout -> logout
                 .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
                 .logoutSuccessUrl("/auth/login?logout=true")

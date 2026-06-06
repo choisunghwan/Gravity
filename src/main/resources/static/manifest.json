@@ -2,7 +2,7 @@
   "name": "Gravity",
   "short_name": "Gravity",
   "description": "서로를 끌어당기는 힘",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#050510",
   "theme_color": "#7C3AED",
