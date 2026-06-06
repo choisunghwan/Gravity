@@ -53,7 +53,13 @@ body {
     display: flex;
     align-items: center;
     gap: 16px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
 }
+.nav-menu::-webkit-scrollbar { display: none; }
 
 .nav-link {
     color: var(--text-sub);
