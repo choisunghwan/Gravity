@@ -229,6 +229,11 @@ function loadImage(url) {
 function resizeCanvas() {
     canvas.width  = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
+    // 모바일: 캔버스 크기 확정 후 스케일 재계산
+    if (canvas.width > 0 && canvas.width < 768) {
+        const autoScale = (canvas.width / 2 * 0.85) / 345;
+        systemScale = Math.max(SCALE_MIN, Math.min(0.75, autoScale));
+    }
     initPlanets();
 }
 
@@ -704,11 +709,6 @@ window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resiz
 resizeCanvas();
 // 모바일: 통합 하단 시트 초기화
 if (isMobile()) initMobileSheet();
-// 모바일: 목성 궤도(345)가 화면에 들어오도록 초기 스케일 자동 조정
-if (canvas.width < 768) {
-    const autoScale = (canvas.width / 2 * 0.85) / 345;
-    systemScale = Math.max(SCALE_MIN, Math.min(0.75, autoScale));
-}
 render();
 updateZoomButtons();
 scheduleShootingStar();
