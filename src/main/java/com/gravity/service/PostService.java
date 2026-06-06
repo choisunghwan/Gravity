@@ -106,6 +106,17 @@ public class PostService {
     }
 
     @Transactional
+    public void updatePost(Long postId, User currentUser, String content, boolean isPublic) {
+        Post post = postRepository.findById(postId).orElseThrow();
+        if (!post.getAuthor().getId().equals(currentUser.getId())) {
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        }
+        post.setContent(content.trim());
+        post.setPublic(isPublic);
+        postRepository.save(post);
+    }
+
+    @Transactional
     public void deletePost(Long postId, User currentUser) {
         Post post = postRepository.findById(postId).orElseThrow();
         if (!post.getAuthor().getId().equals(currentUser.getId())) {

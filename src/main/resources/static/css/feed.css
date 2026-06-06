@@ -267,6 +267,22 @@
 
 .like-icon { font-size: 15px; }
 
+.btn-edit-post {
+    background: transparent;
+    border: none;
+    color: rgba(167,139,250,0.5);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+.btn-edit-post:hover {
+    color: #A78BFA;
+    background: rgba(124,58,237,0.08);
+}
+
 .btn-delete-post {
     background: transparent;
     border: none;

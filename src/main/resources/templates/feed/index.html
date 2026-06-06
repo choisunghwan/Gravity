@@ -91,6 +91,9 @@
                     <span class="like-count" th:text="${post.likeCount}">0</span>
                 </button>
                 <div th:if="${post.authorId == currentUser.id}" class="post-my-actions">
+                    <button class="btn-edit-post"
+                            th:onclick="'openEditModal(' + ${post.id} + ', `' + ${post.content} + '`, ' + ${post.isPublic()} + ')'"
+                            type="button">수정</button>
                     <form th:action="@{'/feed/delete/' + ${post.id}}" method="post" style="display:inline"
                           onsubmit="return confirm('이 신호를 삭제할까요?')">
                         <button type="submit" class="btn-delete-post">삭제</button>
@@ -99,6 +102,29 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- 수정 모달 -->
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:#0F0F28;border:1px solid rgba(167,139,250,0.3);border-radius:20px;padding:28px 24px;max-width:520px;width:90%;box-sizing:border-box;">
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;color:#E2E8F0;">✏️ 신호 수정</h3>
+        <form id="editForm" method="post">
+            <textarea id="editContent" name="content" class="post-textarea" rows="4" maxlength="500"></textarea>
+            <div class="post-char-count"><span id="editCharCount">0</span> / 500</div>
+            <div class="post-write-footer" style="margin-top:12px;">
+                <label class="public-toggle">
+                    <input type="checkbox" name="isPublic" id="editIsPublic">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-label" id="editToggleLabel">🔒 연결된 행성만</span>
+                </label>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" onclick="closeEditModal()"
+                            style="background:rgba(255,255,255,0.08);border:none;border-radius:10px;padding:10px 16px;color:#94A3B8;font-family:inherit;cursor:pointer;">취소</button>
+                    <button type="submit" class="btn-post" style="margin:0;">저장</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -113,6 +139,32 @@
     const toggleLabel = document.getElementById('toggleLabel');
     isPublicCheck.addEventListener('change', () => {
         toggleLabel.textContent = isPublicCheck.checked ? '🌐 전체 공개' : '🔒 연결된 행성만';
+    });
+
+    function openEditModal(id, content, isPublic) {
+        document.getElementById('editForm').action = '/feed/edit/' + id;
+        document.getElementById('editContent').value = content;
+        document.getElementById('editCharCount').textContent = content.length;
+        const check = document.getElementById('editIsPublic');
+        check.checked = isPublic;
+        document.getElementById('editToggleLabel').textContent = isPublic ? '🌐 전체 공개' : '🔒 연결된 행성만';
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    document.getElementById('editModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('editModal')) closeEditModal();
+    });
+
+    document.getElementById('editContent').addEventListener('input', function() {
+        document.getElementById('editCharCount').textContent = this.value.length;
+    });
+
+    document.getElementById('editIsPublic').addEventListener('change', function() {
+        document.getElementById('editToggleLabel').textContent = this.checked ? '🌐 전체 공개' : '🔒 연결된 행성만';
     });
 
     function toggleLike(btn) {

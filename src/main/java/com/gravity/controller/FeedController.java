@@ -53,6 +53,25 @@ public class FeedController {
         return postService.toggleLike(id, user);
     }
 
+    @PostMapping("/edit/{id}")
+    public String editPost(@PathVariable Long id,
+                           @RequestParam String content,
+                           @RequestParam(defaultValue = "false") boolean isPublic,
+                           @AuthenticationPrincipal UserDetails userDetails,
+                           RedirectAttributes redirectAttributes) {
+        if (content == null || content.isBlank()) {
+            redirectAttributes.addFlashAttribute("errorMsg", "내용을 입력해주세요.");
+            return "redirect:/feed";
+        }
+        User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
+        try {
+            postService.updatePost(id, user, content, isPublic);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/feed";
+    }
+
     @PostMapping("/delete/{id}")
     public String deletePost(@PathVariable Long id,
                              @AuthenticationPrincipal UserDetails userDetails,
