@@ -2,6 +2,8 @@ const canvas = document.getElementById('universeCanvas');
 if (!canvas) throw new Error('canvas not found');
 
 const ctx = canvas.getContext('2d');
+
+const isMobile = () => window.innerWidth <= 768;
 let planets = [];
 let stars = [];
 let animFrame;
@@ -227,9 +229,10 @@ function loadImage(url) {
 
 // ── 캔버스 초기화 ──────────────────────────────────────────────────
 function resizeCanvas() {
-    canvas.width  = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-    // 모바일: 캔버스 크기 확정 후 스케일 재계산
+    // offsetWidth가 0이면(iOS 타이밍) innerWidth로 폴백
+    const navH = isMobile() ? 56 : 64;
+    canvas.width  = canvas.offsetWidth  || window.innerWidth;
+    canvas.height = canvas.offsetHeight || (window.innerHeight - navH);
     if (canvas.width > 0 && canvas.width < 768) {
         const autoScale = (canvas.width / 2 * 0.85) / 345;
         systemScale = Math.max(SCALE_MIN, Math.min(0.75, autoScale));
@@ -726,8 +729,6 @@ const newId = params.get('new');
 if (newId) setTimeout(() => showDetail(parseInt(newId)), 800);
 
 // ── 채팅 ────────────────────────────────────────────────────────────
-
-const isMobile = () => window.innerWidth <= 768;
 
 function toggleChat() {
     if (isMobile()) {
