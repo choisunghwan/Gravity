@@ -94,7 +94,10 @@
                 </button>
                 <div th:if="${post.authorId == currentUser.id}" class="post-my-actions">
                     <button class="btn-edit-post"
-                            th:onclick="'openEditModal(' + ${post.id} + ', `' + ${post.content} + '`, ' + ${post.isPublic()} + ')'"
+                            th:data-id="${post.id}"
+                            th:data-content="${post.content}"
+                            th:data-public="${post.isPublic()}"
+                            onclick="openEditModalFromBtn(this)"
                             type="button">수정</button>
                     <form th:action="@{'/feed/delete/' + ${post.id}}" method="post" style="display:inline"
                           onsubmit="return confirm('이 신호를 삭제할까요?')">
@@ -142,6 +145,13 @@
     isPublicCheck.addEventListener('change', () => {
         toggleLabel.textContent = isPublicCheck.checked ? '🌐 전체 공개' : '🔒 연결된 행성만';
     });
+
+    function openEditModalFromBtn(btn) {
+        const id      = btn.dataset.id;
+        const content = btn.dataset.content;
+        const pub     = btn.dataset.public === 'true';
+        openEditModal(id, content, pub);
+    }
 
     function openEditModal(id, content, isPublic) {
         document.getElementById('editForm').action = '/feed/edit/' + id;
