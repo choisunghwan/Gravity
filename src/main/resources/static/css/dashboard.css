@@ -131,6 +131,30 @@ body {
     height: 100%;
 }
 
+/* 3D 행성 DOM 라벨 */
+.planet-label-3d {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: rgba(0, 0, 0, 0.45);
+    padding: 2px 8px;
+    border-radius: 10px;
+    pointer-events: none;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    text-shadow: 0 0 6px rgba(100, 100, 255, 0.5);
+    z-index: 7;
+    transition: background 0.15s, font-weight 0.15s;
+}
+
+.planet-label-3d.hovered {
+    font-weight: 700;
+    color: white;
+    background: rgba(124, 58, 237, 0.65);
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+}
+
 /* Center user */
 .center-user {
     position: absolute;

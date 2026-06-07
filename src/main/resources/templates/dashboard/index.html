@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/css/responsive.css">
     <link rel="stylesheet" href="/css/bottom-nav.css">
     <th:block th:replace="~{fragments/pwa :: pwa}"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.167.0/build/three.min.js"></script>
 </head>
 <body>
 
@@ -53,6 +54,7 @@
     <!-- 우주 캔버스 -->
     <div th:if="${!compatibilities.empty}" class="universe-wrapper">
         <canvas id="universeCanvas"></canvas>
+        <canvas id="overlayCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:6;"></canvas>
 
         <!-- 중앙 나 표시 -->
         <div class="center-user">
@@ -214,7 +216,7 @@
     const currentUserColor = /*[[${currentUser.planetColor ?: '#4FC3F7'}]]*/ '#4FC3F7';
     const currentUserStatus = /*[[${currentUser.statusMessage}]]*/ null;
 </script>
-<script th:src="@{/js/dashboard.js(v='5')}"></script>
+<script th:src="@{/js/dashboard.js(v='6')}"></script>
 <th:block th:replace="~{fragments/bottom-nav :: bottom-nav('dashboard')}"></th:block>
 </body>
 </html>
