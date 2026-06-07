@@ -709,24 +709,30 @@ function showToast(msg) {
 
 window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resizeCanvas(); render(); });
 
-resizeCanvas();
-if (isMobile()) initMobileSheet();
-render();
-
-// iOS: 첫 레이아웃 확정 후 캔버스 재초기화 (offsetWidth가 처음엔 0으로 읽히는 문제)
-if (isMobile()) {
-    setTimeout(() => {
-        cancelAnimationFrame(animFrame);
-        resizeCanvas();
-        render();
-    }, 150);
-}
 updateZoomButtons();
 scheduleShootingStar();
 
 const params = new URLSearchParams(window.location.search);
 const newId = params.get('new');
 if (newId) setTimeout(() => showDetail(parseInt(newId)), 800);
+
+// CSS 레이아웃 확정 후 캔버스 초기화 (모든 디바이스 — 스크립트 실행 시점에 offsetWidth/Height가 0일 수 있음)
+requestAnimationFrame(() => {
+    resizeCanvas();
+    if (isMobile()) initMobileSheet();
+    render();
+
+    // 레이아웃 최종 확정 대기 (iOS 주소창, 동적 vh 변화 등)
+    setTimeout(() => {
+        const w = canvas.offsetWidth;
+        const h = canvas.offsetHeight;
+        if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
+            cancelAnimationFrame(animFrame);
+            resizeCanvas();
+            render();
+        }
+    }, 200);
+});
 
 // ── 채팅 ────────────────────────────────────────────────────────────
 
