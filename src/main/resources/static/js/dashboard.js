@@ -59,9 +59,10 @@ const bigBangFlashDiv = (() => {
 
 // ── 공통 변수 ──────────────────────────────────────────────────────
 const isMobile = () => window.innerWidth <= 768;
-let planets      = [];
-let starField    = null;
+let planets       = [];
+let starField     = null;
 let animFrame;
+let gestureActive = false;   // render()보다 먼저 선언 (TDZ 방지)
 
 let chatOpen           = false;
 let currentPartnerId   = null;
@@ -1245,7 +1246,7 @@ if (window.visualViewport) {
 }
 
 // ── 웹캠 손 제스처 궤도 회전 ──────────────────────────────────────────
-let gestureActive = false;
+// gestureActive 는 상단에 선언됨 (TDZ 방지)
 let gestureHands  = null;
 let gestureStream = null;
 let gestureRAF    = null;
