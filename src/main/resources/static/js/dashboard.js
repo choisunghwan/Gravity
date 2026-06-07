@@ -923,7 +923,8 @@ function pollWishes() {
                     setTimeout(() => wishShownIds.delete(key), 30000);
                 }
             });
-        });
+        })
+        .catch(() => {});
 }
 pollWishes();
 setInterval(pollWishes, 5000);
@@ -935,7 +936,8 @@ window.showWishInput = showWishInput;
 function pollOnlineStatus() {
     fetch('/api/chat/online')
         .then(r => r.json())
-        .then(ids => { onlinePartnerIds = new Set(ids.map(Number)); });
+        .then(ids => { onlinePartnerIds = new Set(ids.map(Number)); })
+        .catch(() => {});
 }
 pollOnlineStatus();
 setInterval(pollOnlineStatus, 30000);
@@ -957,7 +959,8 @@ function pollEffects() {
                 if (e.type === 'BIGBANG')   triggerBigBang();
                 if (e.type === 'SUPERNOVA') triggerSupernovaOnPlanet(e.senderId);
             });
-        });
+        })
+        .catch(() => {});
 }
 setInterval(pollEffects, 3000);
 
@@ -1358,6 +1361,7 @@ setInterval(() => {
                 if (!msgs.length) return;
                 lastMessageTime = msgs[msgs.length - 1].createdAtIso || nowKST();
                 msgs.forEach(m => { triggerSpeechBubble(m.senderId, m.message); unreadCount++; updateBadge(); });
-            });
+            })
+            .catch(() => {});
     }
 }, 5000);
