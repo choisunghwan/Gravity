@@ -229,10 +229,9 @@ function loadImage(url) {
 
 // ── 캔버스 초기화 ──────────────────────────────────────────────────
 function resizeCanvas() {
-    // offsetWidth가 0이면(iOS 타이밍) innerWidth로 폴백
     const navH = isMobile() ? 56 : 64;
-    canvas.width  = canvas.offsetWidth  || window.innerWidth;
-    canvas.height = canvas.offsetHeight || (window.innerHeight - navH);
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight - navH;
     if (canvas.width > 0 && canvas.width < 768) {
         const autoScale = (canvas.width / 2 * 0.85) / 345;
         systemScale = Math.max(SCALE_MIN, Math.min(0.75, autoScale));
@@ -716,23 +715,9 @@ const params = new URLSearchParams(window.location.search);
 const newId = params.get('new');
 if (newId) setTimeout(() => showDetail(parseInt(newId)), 800);
 
-// CSS 레이아웃 확정 후 캔버스 초기화 (모든 디바이스 — 스크립트 실행 시점에 offsetWidth/Height가 0일 수 있음)
-requestAnimationFrame(() => {
-    resizeCanvas();
-    if (isMobile()) initMobileSheet();
-    render();
-
-    // 레이아웃 최종 확정 대기 (iOS 주소창, 동적 vh 변화 등)
-    setTimeout(() => {
-        const w = canvas.offsetWidth;
-        const h = canvas.offsetHeight;
-        if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
-            cancelAnimationFrame(animFrame);
-            resizeCanvas();
-            render();
-        }
-    }, 200);
-});
+resizeCanvas();
+if (isMobile()) initMobileSheet();
+render();
 
 // ── 채팅 ────────────────────────────────────────────────────────────
 
