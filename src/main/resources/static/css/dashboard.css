@@ -155,39 +155,41 @@ body {
     box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
 }
 
-/* 웹캠 제스처 패널 */
+/* 웹캠 제스처 패널 (우측 하단) */
 .gesture-panel {
-    position: absolute;
-    top: 16px;
-    left: 16px;
+    position: fixed;
+    bottom: 100px;
+    right: 16px;
     z-index: 20;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    background: rgba(5, 5, 20, 0.8);
-    border: 1px solid rgba(167, 139, 250, 0.3);
-    border-radius: 14px;
-    padding: 10px;
-    backdrop-filter: blur(12px);
+    gap: 6px;
+    background: rgba(5, 5, 20, 0.82);
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    border-radius: 12px;
+    padding: 8px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 
 .gesture-panel video {
-    width: 160px;
-    height: 120px;
-    border-radius: 8px;
+    width: 128px;
+    height: 96px;
+    border-radius: 7px;
     object-fit: cover;
-    transform: scaleX(-1);  /* 거울 모드 */
+    transform: scaleX(-1);   /* 거울 모드 */
     background: #000;
+    display: block;
 }
 
 .gesture-label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #A78BFA;
     white-space: nowrap;
     text-align: center;
-    min-width: 140px;
+    min-width: 120px;
 }
 
 /* 제스처 버튼 활성화 */

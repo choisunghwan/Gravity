@@ -16,13 +16,20 @@ renderer.setClearColor(0x050510, 1);
 const overlayCanvas = document.getElementById('overlayCanvas');
 const overlayCtx    = overlayCanvas ? overlayCanvas.getContext('2d') : null;
 
-// 카메라 – 35° 위에서 내려다보는 고정 뷰
+// 카메라 – 35° 위에서 내려다보는 뷰 + 수평 공전
 let cameraDistance = 1000;
 const CAM_MIN = 250, CAM_MAX = 3000;
 const CAMERA_TILT = 35 * Math.PI / 180;
+let cameraAzimuth    = 0;       // 수평 회전각 (radians)
+let rotationVelocity = 0;       // 제스처 관성
+let handPresent      = false;   // 손 감지 여부
+let prevHandX        = null;    // 이전 프레임 손 X (0~1)
+const AUTO_ROTATE_SPEED = 0.0008; // 자동 회전 속도 (rad/frame)
 
 function updateCameraPosition() {
-    camera.position.set(0, Math.sin(CAMERA_TILT) * cameraDistance, Math.cos(CAMERA_TILT) * cameraDistance);
+    const r = Math.cos(CAMERA_TILT) * cameraDistance;
+    const y = Math.sin(CAMERA_TILT) * cameraDistance;
+    camera.position.set(Math.sin(cameraAzimuth) * r, y, Math.cos(cameraAzimuth) * r);
     camera.lookAt(0, 0, 0);
 }
 updateCameraPosition();
@@ -390,6 +397,17 @@ function render() {
 
     if (bigBangActive) updateBigBang3D();
     updateSupernovaEffects3D();
+
+    // 카메라 수평 회전 (자동 or 손 제스처 관성)
+    if (gestureActive && handPresent) {
+        cameraAzimuth    += rotationVelocity;
+        rotationVelocity *= 0.85;          // 손 있을 때 관성 빠르게 감쇠
+    } else {
+        cameraAzimuth    += AUTO_ROTATE_SPEED;  // 자동 회전
+        rotationVelocity *= 0.92;          // 손 떠난 후 관성 서서히 감쇠
+        cameraAzimuth    += rotationVelocity;
+    }
+    updateCameraPosition();
 
     renderer.render(scene, camera);
     animFrame = requestAnimationFrame(render);
@@ -1226,16 +1244,11 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener('scroll', onViewportResize);
 }
 
-// ── 웹캠 손 제스처 줌 ────────────────────────────────────────────────
-let gestureActive   = false;
-let gestureHands    = null;
-let gestureStream   = null;
-let gestureRAF      = null;
-let lastGesture     = 'neutral';
-let gestureHoldStart = 0;
-const GESTURE_HOLD_MS = 400;   // 이 시간 이상 유지 시 줌 적용
-const GESTURE_ZOOM_INTERVAL = 120; // 연속 줌 주기(ms)
-let gestureLastZoom = 0;
+// ── 웹캠 손 제스처 궤도 회전 ──────────────────────────────────────────
+let gestureActive = false;
+let gestureHands  = null;
+let gestureStream = null;
+let gestureRAF    = null;
 
 function toggleGestureControl() {
     gestureActive ? stopGestureControl() : startGestureControl();
@@ -1249,9 +1262,10 @@ async function startGestureControl() {
         return;
     }
 
-    // 웹캠 권한
     try {
-        gestureStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, facingMode: 'user' } });
+        gestureStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 320, height: 240, facingMode: 'user' }
+        });
     } catch (err) {
         showToast('카메라 접근 실패: ' + err.message);
         return;
@@ -1261,24 +1275,24 @@ async function startGestureControl() {
     videoEl.srcObject = gestureStream;
     await videoEl.play();
 
-    // MediaPipe Hands 초기화
     gestureHands = new Hands({
         locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
     });
     gestureHands.setOptions({
         maxNumHands: 1,
         modelComplexity: 0,
-        minDetectionConfidence: 0.7,
+        minDetectionConfidence: 0.65,
         minTrackingConfidence: 0.5
     });
     gestureHands.onResults(onGestureResults);
 
     gestureActive = true;
+    handPresent   = false;
+    prevHandX     = null;
     document.getElementById('gesturePanel').style.display = 'flex';
     if (btn) btn.classList.add('gesture-on');
-    showToast('✋ 손 제스처 줌 활성화 — 손 펼치기: 줌인, 주먹: 줌아웃');
+    showToast('✋ 손을 좌우로 움직여 태양계를 회전하세요');
 
-    // 프레임마다 손 감지
     async function processFrame() {
         if (!gestureActive) return;
         if (videoEl.readyState >= 2) {
@@ -1291,7 +1305,9 @@ async function startGestureControl() {
 
 function stopGestureControl() {
     gestureActive = false;
-    if (gestureRAF) { cancelAnimationFrame(gestureRAF); gestureRAF = null; }
+    handPresent   = false;
+    prevHandX     = null;
+    if (gestureRAF)    { cancelAnimationFrame(gestureRAF); gestureRAF = null; }
     if (gestureStream) { gestureStream.getTracks().forEach(t => t.stop()); gestureStream = null; }
     if (gestureHands)  { gestureHands.close(); gestureHands = null; }
     const videoEl = document.getElementById('gestureVideo');
@@ -1299,55 +1315,47 @@ function stopGestureControl() {
     document.getElementById('gesturePanel').style.display = 'none';
     const btn = document.getElementById('gestureBtn');
     if (btn) btn.classList.remove('gesture-on');
-    lastGesture = 'neutral';
-    showToast('제스처 컨트롤 비활성화');
-}
-
-function detectHandGesture(landmarks) {
-    // 손가락 tip(끝) vs PIP(중간 관절) y 비교 — y값 작을수록 화면 위쪽
-    const tips = [8, 12, 16, 20];
-    const pips = [6, 10, 14, 18];
-    let extended = 0;
-    tips.forEach((tip, i) => {
-        if (landmarks[tip].y < landmarks[pips[i]].y) extended++;
-    });
-    if (extended >= 3) return 'open';
-    if (extended <= 1) return 'closed';
-    return 'neutral';
+    showToast('손 제스처 회전 비활성화 — 자동 회전 복귀');
 }
 
 function onGestureResults(results) {
     const labelEl = document.getElementById('gestureLabel');
+
     if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
-        lastGesture      = 'neutral';
-        gestureHoldStart = 0;
+        // 손 없음 → 자동 회전 복귀 (render 루프가 처리)
+        handPresent = false;
+        prevHandX   = null;
         if (labelEl) labelEl.textContent = '✋ 손을 보여주세요';
         return;
     }
 
-    const gesture = detectHandGesture(results.multiHandLandmarks[0]);
-    const now     = Date.now();
+    handPresent = true;
 
-    if (labelEl) {
-        if (gesture === 'open')   labelEl.textContent = '🖐 펼치기 → 줌 인';
-        else if (gesture === 'closed') labelEl.textContent = '✊ 주먹 → 줌 아웃';
-        else                      labelEl.textContent = '✋ 대기 중';
+    // 손바닥 중심 = landmark 9 (중지 MCP)
+    // MediaPipe X: 0=프레임 왼쪽, 1=오른쪽 (미러링 전 원본 기준)
+    // CSS scaleX(-1) 로 미러링된 화면에서:
+    //   사용자가 오른쪽으로 움직이면 → MediaPipe X 감소 (deltaX < 0)
+    // 원하는 동작: 오른쪽 스와이프 → 오른쪽 회전 (azimuth 증가)
+    // 따라서: rotationVelocity = -deltaX * sensitivity
+    const palmX = results.multiHandLandmarks[0][9].x;
+
+    if (prevHandX !== null) {
+        const deltaX    = palmX - prevHandX;
+        const SENS      = 4.0;
+        rotationVelocity = -deltaX * SENS;   // 미러 보정: 부호 반전
+
+        if (labelEl) {
+            if (Math.abs(deltaX) > 0.008) {
+                labelEl.textContent = deltaX < 0 ? '→ 오른쪽 회전' : '← 왼쪽 회전';
+            } else {
+                labelEl.textContent = '손 인식 중 ✋';
+            }
+        }
+    } else {
+        if (labelEl) labelEl.textContent = '손 인식 중 ✋';
     }
 
-    if (gesture !== lastGesture) {
-        lastGesture      = gesture;
-        gestureHoldStart = gesture !== 'neutral' ? now : 0;
-        return;
-    }
-
-    if (gesture === 'neutral' || gestureHoldStart === 0) return;
-
-    const held = now - gestureHoldStart;
-    if (held >= GESTURE_HOLD_MS && now - gestureLastZoom >= GESTURE_ZOOM_INTERVAL) {
-        if (gesture === 'open')   setScale(1.1);
-        if (gesture === 'closed') setScale(0.9);
-        gestureLastZoom = now;
-    }
+    prevHandX = palmX;
 }
 
 window.toggleGestureControl = toggleGestureControl;
