@@ -1223,6 +1223,132 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener('scroll', onViewportResize);
 }
 
+// ── 웹캠 손 제스처 줌 ────────────────────────────────────────────────
+let gestureActive   = false;
+let gestureHands    = null;
+let gestureStream   = null;
+let gestureRAF      = null;
+let lastGesture     = 'neutral';
+let gestureHoldStart = 0;
+const GESTURE_HOLD_MS = 400;   // 이 시간 이상 유지 시 줌 적용
+const GESTURE_ZOOM_INTERVAL = 120; // 연속 줌 주기(ms)
+let gestureLastZoom = 0;
+
+function toggleGestureControl() {
+    gestureActive ? stopGestureControl() : startGestureControl();
+}
+
+async function startGestureControl() {
+    const btn = document.getElementById('gestureBtn');
+
+    if (typeof Hands === 'undefined') {
+        showToast('❌ 제스처 라이브러리 로드 중… 잠시 후 다시 시도하세요');
+        return;
+    }
+
+    // 웹캠 권한
+    try {
+        gestureStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, facingMode: 'user' } });
+    } catch (err) {
+        showToast('카메라 접근 실패: ' + err.message);
+        return;
+    }
+
+    const videoEl = document.getElementById('gestureVideo');
+    videoEl.srcObject = gestureStream;
+    await videoEl.play();
+
+    // MediaPipe Hands 초기화
+    gestureHands = new Hands({
+        locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
+    });
+    gestureHands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 0,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.5
+    });
+    gestureHands.onResults(onGestureResults);
+
+    gestureActive = true;
+    document.getElementById('gesturePanel').style.display = 'flex';
+    if (btn) btn.classList.add('gesture-on');
+    showToast('✋ 손 제스처 줌 활성화 — 손 펼치기: 줌인, 주먹: 줌아웃');
+
+    // 프레임마다 손 감지
+    async function processFrame() {
+        if (!gestureActive) return;
+        if (videoEl.readyState >= 2) {
+            try { await gestureHands.send({ image: videoEl }); } catch (_) {}
+        }
+        gestureRAF = requestAnimationFrame(processFrame);
+    }
+    processFrame();
+}
+
+function stopGestureControl() {
+    gestureActive = false;
+    if (gestureRAF) { cancelAnimationFrame(gestureRAF); gestureRAF = null; }
+    if (gestureStream) { gestureStream.getTracks().forEach(t => t.stop()); gestureStream = null; }
+    if (gestureHands)  { gestureHands.close(); gestureHands = null; }
+    const videoEl = document.getElementById('gestureVideo');
+    if (videoEl) videoEl.srcObject = null;
+    document.getElementById('gesturePanel').style.display = 'none';
+    const btn = document.getElementById('gestureBtn');
+    if (btn) btn.classList.remove('gesture-on');
+    lastGesture = 'neutral';
+    showToast('제스처 컨트롤 비활성화');
+}
+
+function detectHandGesture(landmarks) {
+    // 손가락 tip(끝) vs PIP(중간 관절) y 비교 — y값 작을수록 화면 위쪽
+    const tips = [8, 12, 16, 20];
+    const pips = [6, 10, 14, 18];
+    let extended = 0;
+    tips.forEach((tip, i) => {
+        if (landmarks[tip].y < landmarks[pips[i]].y) extended++;
+    });
+    if (extended >= 3) return 'open';
+    if (extended <= 1) return 'closed';
+    return 'neutral';
+}
+
+function onGestureResults(results) {
+    const labelEl = document.getElementById('gestureLabel');
+    if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
+        lastGesture      = 'neutral';
+        gestureHoldStart = 0;
+        if (labelEl) labelEl.textContent = '✋ 손을 보여주세요';
+        return;
+    }
+
+    const gesture = detectHandGesture(results.multiHandLandmarks[0]);
+    const now     = Date.now();
+
+    if (labelEl) {
+        if (gesture === 'open')   labelEl.textContent = '🖐 펼치기 → 줌 인';
+        else if (gesture === 'closed') labelEl.textContent = '✊ 주먹 → 줌 아웃';
+        else                      labelEl.textContent = '✋ 대기 중';
+    }
+
+    if (gesture !== lastGesture) {
+        lastGesture      = gesture;
+        gestureHoldStart = gesture !== 'neutral' ? now : 0;
+        return;
+    }
+
+    if (gesture === 'neutral' || gestureHoldStart === 0) return;
+
+    const held = now - gestureHoldStart;
+    if (held >= GESTURE_HOLD_MS && now - gestureLastZoom >= GESTURE_ZOOM_INTERVAL) {
+        if (gesture === 'open')   setScale(1.1);
+        if (gesture === 'closed') setScale(0.9);
+        gestureLastZoom = now;
+    }
+}
+
+window.toggleGestureControl = toggleGestureControl;
+
 // 백그라운드 메시지 폴링
 setInterval(() => {
     if (!currentPartnerId) {

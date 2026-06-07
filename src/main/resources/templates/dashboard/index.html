@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/css/bottom-nav.css">
     <th:block th:replace="~{fragments/pwa :: pwa}"></th:block>
     <script src="/js/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -83,6 +84,13 @@
             <button id="zoomIn"    class="zoom-btn">＋</button>
             <button id="zoomReset" class="zoom-btn">⟳</button>
             <button id="zoomOut"   class="zoom-btn">－</button>
+            <button id="gestureBtn" class="zoom-btn gesture-btn" onclick="toggleGestureControl()" title="손 제스처 줌">📷</button>
+        </div>
+
+        <!-- 웹캠 제스처 패널 -->
+        <div id="gesturePanel" class="gesture-panel" style="display:none">
+            <video id="gestureVideo" autoplay muted playsinline></video>
+            <div id="gestureLabel" class="gesture-label">✋ 손을 보여주세요</div>
         </div>
 
         <!-- 점수 목록 -->

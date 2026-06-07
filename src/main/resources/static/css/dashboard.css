@@ -155,6 +155,48 @@ body {
     box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
 }
 
+/* 웹캠 제스처 패널 */
+.gesture-panel {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: rgba(5, 5, 20, 0.8);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-radius: 14px;
+    padding: 10px;
+    backdrop-filter: blur(12px);
+}
+
+.gesture-panel video {
+    width: 160px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    transform: scaleX(-1);  /* 거울 모드 */
+    background: #000;
+}
+
+.gesture-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #A78BFA;
+    white-space: nowrap;
+    text-align: center;
+    min-width: 140px;
+}
+
+/* 제스처 버튼 활성화 */
+.gesture-btn.gesture-on {
+    background: rgba(34, 197, 94, 0.3);
+    border-color: #22C55E;
+    color: #22C55E;
+}
+
 /* Center user */
 .center-user {
     position: absolute;
