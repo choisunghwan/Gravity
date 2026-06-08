@@ -149,6 +149,9 @@
 
         <a th:href="@{/dashboard}" class="btn-back">← 대시보드로</a>
 
+        <!-- 로그아웃 (모바일에서 상단 nav 숨겨지므로 여기서 제공) -->
+        <a th:href="@{/auth/logout}" class="btn-logout-mobile">🚪 로그아웃</a>
+
         <!-- 회원 탈퇴 -->
         <div class="danger-zone">
             <button type="button" class="btn-delete" onclick="document.getElementById('deleteModal').style.display='flex'">

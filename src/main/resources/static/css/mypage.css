@@ -138,6 +138,20 @@
 }
 .btn-back:hover { color: #94A3B8; }
 
+.btn-logout-mobile {
+    display: block;
+    text-align: center;
+    color: #94A3B8;
+    font-size: 14px;
+    text-decoration: none;
+    padding: 10px 0;
+    margin-top: 8px;
+    border: 1px solid rgba(148,163,184,0.2);
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+.btn-logout-mobile:hover { color: white; background: rgba(148,163,184,0.1); }
+
 /* ── 탭 ─────────────────────────────────────────────────────────── */
 .tab-wrap {
     display: flex;
