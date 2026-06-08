@@ -394,6 +394,7 @@ function render() {
         drawShootingStars();
         drawSpeechBubbles();
         drawEmojiParticles();
+        drawVoiceWaves();
     }
 
     if (bigBangActive) updateBigBang3D();
@@ -1250,6 +1251,7 @@ if (window.visualViewport) {
 let gestureHands  = null;
 let gestureStream = null;
 let gestureRAF    = null;
+let prevPinchDist = null;
 
 function toggleGestureControl() {
     gestureActive ? stopGestureControl() : startGestureControl();
@@ -1275,6 +1277,8 @@ async function startGestureControl() {
     const videoEl = document.getElementById('gestureVideo');
     videoEl.srcObject = gestureStream;
     await videoEl.play();
+    const gCvs = document.getElementById('gestureCanvas');
+    if (gCvs) { gCvs.width = videoEl.videoWidth || 320; gCvs.height = videoEl.videoHeight || 240; }
 
     gestureHands = new Hands({
         locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
@@ -1308,6 +1312,7 @@ function stopGestureControl() {
     gestureActive = false;
     handPresent   = false;
     prevHandX     = null;
+    prevPinchDist = null;
     if (gestureRAF)    { cancelAnimationFrame(gestureRAF); gestureRAF = null; }
     if (gestureStream) { gestureStream.getTracks().forEach(t => t.stop()); gestureStream = null; }
     if (gestureHands)  { gestureHands.close(); gestureHands = null; }
@@ -1319,34 +1324,90 @@ function stopGestureControl() {
     showToast('손 제스처 회전 비활성화 — 자동 회전 복귀');
 }
 
+// MediaPipe 손 연결선 (21개 랜드마크)
+const HAND_CONNECTIONS = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [5,9],[9,10],[10,11],[11,12],
+    [9,13],[13,14],[14,15],[15,16],
+    [13,17],[17,18],[18,19],[19,20],
+    [0,17]
+];
+
+function drawHandLandmarks(landmarks) {
+    const gCvs = document.getElementById('gestureCanvas');
+    if (!gCvs) return;
+    const ctx = gCvs.getContext('2d');
+    const W = gCvs.width, H = gCvs.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // 연결선
+    ctx.strokeStyle = 'rgba(0,230,90,0.85)';
+    ctx.lineWidth   = 1.8;
+    HAND_CONNECTIONS.forEach(([a, b]) => {
+        const lA = landmarks[a], lB = landmarks[b];
+        ctx.beginPath();
+        ctx.moveTo((1 - lA.x) * W, lA.y * H);  // 비디오가 CSS mirror이므로 x 반전
+        ctx.lineTo((1 - lB.x) * W, lB.y * H);
+        ctx.stroke();
+    });
+
+    // 랜드마크 점 (엄지 끝=4, 검지 끝=8 강조)
+    landmarks.forEach((lm, i) => {
+        const isPinch = i === 4 || i === 8;
+        ctx.beginPath();
+        ctx.arc((1 - lm.x) * W, lm.y * H, isPinch ? 5 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = isPinch ? '#FFD700' : '#00E85A';
+        ctx.fill();
+    });
+}
+
 function onGestureResults(results) {
     const labelEl = document.getElementById('gestureLabel');
+    const gCvs    = document.getElementById('gestureCanvas');
 
+    // 손 없음 → 캔버스 지우고 자동 회전으로 복귀
     if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
-        // 손 없음 → 자동 회전 복귀 (render 루프가 처리)
-        handPresent = false;
-        prevHandX   = null;
+        handPresent   = false;
+        prevHandX     = null;
+        prevPinchDist = null;
+        if (gCvs) gCvs.getContext('2d').clearRect(0, 0, gCvs.width, gCvs.height);
         if (labelEl) labelEl.textContent = '✋ 손을 보여주세요';
         return;
     }
 
     handPresent = true;
+    const landmarks = results.multiHandLandmarks[0];
 
-    // 손바닥 중심 = landmark 9 (중지 MCP)
-    // MediaPipe X: 0=프레임 왼쪽, 1=오른쪽 (미러링 전 원본 기준)
-    // CSS scaleX(-1) 로 미러링된 화면에서:
-    //   사용자가 오른쪽으로 움직이면 → MediaPipe X 감소 (deltaX < 0)
-    // 원하는 동작: 오른쪽 스와이프 → 오른쪽 회전 (azimuth 증가)
-    // 따라서: rotationVelocity = -deltaX * sensitivity
-    const palmX = results.multiHandLandmarks[0][9].x;
+    // 랜드마크 그리기
+    drawHandLandmarks(landmarks);
+
+    // 핀치 줌 (엄지 끝=4, 검지 끝=8)
+    const thumb = landmarks[4], index = landmarks[8];
+    const pinchDist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
+    const pinching  = pinchDist < 0.09;
+
+    if (prevPinchDist !== null) {
+        const ratio = pinchDist / prevPinchDist;
+        if (Math.abs(ratio - 1) > 0.04) {
+            setScale(ratio > 1 ? 1.05 : 0.95);
+        }
+    }
+    prevPinchDist = pinchDist;
+
+    // 스와이프 회전 (손바닥 중심 = landmark 9)
+    // MediaPipe X: 0=프레임 왼쪽, 1=오른쪽 (원본 기준)
+    // CSS scaleX(-1) 미러: 오른쪽 스와이프 → deltaX < 0 → rotationVelocity 양수
+    const palmX = landmarks[9].x;
 
     if (prevHandX !== null) {
-        const deltaX    = palmX - prevHandX;
-        const SENS      = 4.0;
-        rotationVelocity = -deltaX * SENS;   // 미러 보정: 부호 반전
+        const deltaX     = palmX - prevHandX;
+        rotationVelocity = -deltaX * 4.0;
 
         if (labelEl) {
-            if (Math.abs(deltaX) > 0.008) {
+            if (pinching) {
+                labelEl.textContent = pinchDist < prevPinchDist ? '🔍 줌인' : '🔎 줌아웃';
+            } else if (Math.abs(deltaX) > 0.008) {
                 labelEl.textContent = deltaX < 0 ? '→ 오른쪽 회전' : '← 왼쪽 회전';
             } else {
                 labelEl.textContent = '손 인식 중 ✋';
@@ -1374,3 +1435,190 @@ setInterval(() => {
             .catch(() => {});
     }
 }, 5000);
+
+// ── 음성 어시스턴트 ────────────────────────────────────────────────────
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+let voiceListening        = false;
+let voiceActive           = false;
+let voiceRecognition      = null;
+let voiceDeactivateTimer  = null;
+let voiceSpawnInterval    = null;
+const voiceWaveRings      = [];
+
+function toggleVoiceAssistant() {
+    voiceListening ? stopVoiceAssistant() : startVoiceAssistant();
+}
+
+function startVoiceAssistant() {
+    if (!SpeechRecognitionAPI) {
+        showToast('❌ 이 브라우저는 음성 인식을 지원하지 않아요 (Chrome 권장)');
+        return;
+    }
+    voiceRecognition = new SpeechRecognitionAPI();
+    voiceRecognition.lang            = 'ko-KR';
+    voiceRecognition.continuous      = true;
+    voiceRecognition.interimResults  = false;
+    voiceRecognition.maxAlternatives = 2;
+
+    voiceRecognition.onresult = e => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            const text = e.results[i][0].transcript.trim();
+            handleVoiceInput(text);
+        }
+    };
+    voiceRecognition.onerror = e => {
+        if (e.error !== 'no-speech' && e.error !== 'aborted') showToast('🎤 음성 오류: ' + e.error);
+    };
+    voiceRecognition.onend = () => {
+        if (voiceListening) setTimeout(() => { try { voiceRecognition.start(); } catch (_) {} }, 200);
+    };
+    voiceRecognition.start();
+
+    voiceListening = true;
+    const btn = document.getElementById('voiceBtn');
+    if (btn) btn.classList.add('voice-listening');
+    document.getElementById('voiceStatus').style.display = 'flex';
+    document.getElementById('voiceStatusText').textContent = '"그래비티"라고 불러주세요';
+    showToast('🎤 음성 어시스턴트 켜짐 — "그래비티"라고 불러주세요');
+}
+
+function stopVoiceAssistant() {
+    voiceListening = false;
+    voiceActive    = false;
+    if (voiceRecognition) { try { voiceRecognition.stop(); } catch (_) {} voiceRecognition = null; }
+    clearTimeout(voiceDeactivateTimer);
+    clearInterval(voiceSpawnInterval);
+    voiceSpawnInterval = null;
+    voiceWaveRings.length = 0;
+    document.querySelector('.center-planet')?.classList.remove('voice-active');
+    const btn = document.getElementById('voiceBtn');
+    if (btn) { btn.classList.remove('voice-listening'); btn.classList.remove('voice-on'); }
+    document.getElementById('voiceStatus').style.display = 'none';
+    showToast('🎤 음성 어시스턴트 꺼짐');
+}
+
+function handleVoiceInput(text) {
+    const t = text.toLowerCase();
+    if (!voiceActive) {
+        if (t.includes('그래비티') || t.includes('gravity') || t.includes('그래 비티')) {
+            activateVoiceMode();
+        }
+        return;
+    }
+    processVoiceCommand(t);
+}
+
+function activateVoiceMode() {
+    voiceActive = true;
+    clearTimeout(voiceDeactivateTimer);
+    document.querySelector('.center-planet')?.classList.add('voice-active');
+    spawnVoiceWaveSet();
+    clearInterval(voiceSpawnInterval);
+    voiceSpawnInterval = setInterval(spawnVoiceWaveSet, 700);
+    const btn = document.getElementById('voiceBtn');
+    if (btn) { btn.classList.add('voice-on'); btn.classList.remove('voice-listening'); }
+    document.getElementById('voiceStatusText').textContent = '명령을 말씀하세요...';
+    speak('네, 그래비티입니다. 무엇을 도와드릴까요?');
+    voiceDeactivateTimer = setTimeout(deactivateVoiceMode, 5000);
+}
+
+function deactivateVoiceMode() {
+    voiceActive = false;
+    clearInterval(voiceSpawnInterval);
+    voiceSpawnInterval = null;
+    document.querySelector('.center-planet')?.classList.remove('voice-active');
+    const btn = document.getElementById('voiceBtn');
+    if (btn) { btn.classList.remove('voice-on'); if (voiceListening) btn.classList.add('voice-listening'); }
+    document.getElementById('voiceStatusText').textContent = '"그래비티"라고 불러주세요';
+}
+
+function processVoiceCommand(t) {
+    clearTimeout(voiceDeactivateTimer);
+    let replied = false;
+
+    if (t.includes('왼쪽') || t.includes('왼')) {
+        rotationVelocity = -0.12;
+        speak('왼쪽으로 회전합니다');
+        replied = true;
+    } else if (t.includes('오른쪽') || t.includes('오른')) {
+        rotationVelocity = 0.12;
+        speak('오른쪽으로 회전합니다');
+        replied = true;
+    } else if (t.includes('궤도') || t.includes('돌려') || t.includes('회전')) {
+        rotationVelocity = 0.12;
+        speak('궤도를 회전합니다');
+        replied = true;
+    } else if (t.includes('줌인') || t.includes('확대') || t.includes('크게')) {
+        setScale(1.6);
+        speak('확대합니다');
+        replied = true;
+    } else if (t.includes('줌아웃') || t.includes('축소') || t.includes('작게')) {
+        setScale(0.6);
+        speak('축소합니다');
+        replied = true;
+    } else if (t.includes('궁합') || t.includes('보여줘') || t.includes('보여')) {
+        const top = planets[0];
+        if (top) { showDetail(top.id); speak('궁합을 보여드릴게요'); }
+        else speak('연결된 행성이 없어요');
+        replied = true;
+    } else if (t.includes('채팅') || t.includes('대화')) {
+        if (!isMobile()) { chatOpen = false; toggleChat(); }
+        else setSheetTab('chat');
+        speak('채팅창을 열어드릴게요');
+        replied = true;
+    } else if (t.includes('접속') || t.includes('온라인') || t.includes('누가')) {
+        const online = planets.filter(p => onlinePartnerIds.has(Number(p.partnerId)));
+        highlightOnlinePlanets(online);
+        speak(online.length ? online.map(p => p.name).join(', ') + ' 이 접속 중이에요' : '현재 접속 중인 행성이 없어요');
+        replied = true;
+    }
+
+    if (replied) spawnVoiceWaveSet();
+    voiceDeactivateTimer = setTimeout(deactivateVoiceMode, 3000);
+}
+
+function highlightOnlinePlanets(online) {
+    (online || planets.filter(p => onlinePartnerIds.has(Number(p.partnerId)))).forEach(p => {
+        let n = 0;
+        const iv = setInterval(() => {
+            p.onRing.material.opacity = n % 2 === 0 ? 1.0 : 0.2;
+            if (++n >= 8) { clearInterval(iv); p.onRing.material.opacity = onlinePartnerIds.has(Number(p.partnerId)) ? 0.8 : 0; }
+        }, 200);
+    });
+}
+
+function spawnVoiceWaveSet() {
+    for (let i = 0; i < 3; i++) {
+        voiceWaveRings.push({ r: 30, alpha: 0.7 - i * 0.15, speed: 1.8 + i * 0.4, delay: i * 18 });
+    }
+}
+
+function drawVoiceWaves() {
+    if (!overlayCtx || voiceWaveRings.length === 0) return;
+    const cx = overlayCanvas.width  / 2;
+    const cy = overlayCanvas.height / 2;
+    for (let i = voiceWaveRings.length - 1; i >= 0; i--) {
+        const ring = voiceWaveRings[i];
+        if (ring.delay > 0) { ring.delay--; continue; }
+        ring.r     += ring.speed;
+        ring.alpha -= 0.008;
+        if (ring.alpha <= 0) { voiceWaveRings.splice(i, 1); continue; }
+        overlayCtx.beginPath();
+        overlayCtx.arc(cx, cy, ring.r, 0, Math.PI * 2);
+        overlayCtx.strokeStyle = `rgba(167,139,250,${ring.alpha.toFixed(3)})`;
+        overlayCtx.lineWidth   = 2;
+        overlayCtx.stroke();
+    }
+}
+
+function speak(text) {
+    if (!window.speechSynthesis) return;
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang  = 'ko-KR';
+    utt.rate  = 1.1;
+    utt.pitch = 1.0;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utt);
+}
+
+window.toggleVoiceAssistant = toggleVoiceAssistant;

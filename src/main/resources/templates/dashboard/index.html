@@ -84,12 +84,16 @@
             <button id="zoomIn"    class="zoom-btn">＋</button>
             <button id="zoomReset" class="zoom-btn">⟳</button>
             <button id="zoomOut"   class="zoom-btn">－</button>
-            <button id="gestureBtn" class="zoom-btn gesture-btn" onclick="toggleGestureControl()" title="손 제스처 줌">📷</button>
+            <button id="gestureBtn" class="zoom-btn gesture-btn" onclick="toggleGestureControl()" title="손 제스처 회전·줌">📷</button>
+            <button id="voiceBtn"  class="zoom-btn voice-btn"   onclick="toggleVoiceAssistant()" title="음성 어시스턴트 (그래비티)">🎤</button>
         </div>
 
         <!-- 웹캠 제스처 패널 -->
         <div id="gesturePanel" class="gesture-panel" style="display:none">
-            <video id="gestureVideo" autoplay muted playsinline></video>
+            <div class="gesture-video-wrap">
+                <video id="gestureVideo" autoplay muted playsinline></video>
+                <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
+            </div>
             <div id="gestureLabel" class="gesture-label">✋ 손을 보여주세요</div>
         </div>
 
@@ -211,6 +215,12 @@
     </div>
 </div>
 
+<!-- 음성 어시스턴트 상태 표시 -->
+<div id="voiceStatus" class="voice-status" style="display:none">
+    <span class="voice-status-dot"></span>
+    <span id="voiceStatusText">"그래비티"라고 불러주세요</span>
+</div>
+
 <!-- 토스트 알림 -->
 <div id="toast" class="toast"></div>
 
@@ -224,7 +234,7 @@
     const currentUserColor = /*[[${currentUser.planetColor ?: '#4FC3F7'}]]*/ '#4FC3F7';
     const currentUserStatus = /*[[${currentUser.statusMessage}]]*/ null;
 </script>
-<script th:src="@{/js/dashboard.js(v='9')}"></script>
+<script th:src="@{/js/dashboard.js(v='10')}"></script>
 <th:block th:replace="~{fragments/bottom-nav :: bottom-nav('dashboard')}"></th:block>
 </body>
 </html>
