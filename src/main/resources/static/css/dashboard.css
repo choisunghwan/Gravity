@@ -175,12 +175,12 @@ body {
 }
 
 .gesture-panel video {
-    /* MediaPipe 처리용 — 어느 브라우저/모바일에서도 화면에 표시 안 함 */
+    /* MediaPipe 처리용 — transform으로 시각적으로만 숨김 (0x0이면 프레임 디코딩 중단) */
     position: absolute;
     top: 0; left: 0;
-    width: 0;
-    height: 0;
-    opacity: 0;
+    width: 200px;
+    height: 150px;
+    transform: translateX(-9999px);
     pointer-events: none;
 }
 
