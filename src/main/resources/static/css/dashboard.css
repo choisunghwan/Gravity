@@ -155,32 +155,32 @@ body {
     box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
 }
 
-/* 웹캠 제스처 패널 (좌측 상단) */
+/* 웹캠 제스처 패널 (하단 중앙) */
 .gesture-panel {
     position: fixed;
-    top: 80px;
-    left: 16px;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 150;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    background: rgba(5, 5, 20, 0.82);
-    border: 1px solid rgba(167, 139, 250, 0.35);
-    border-radius: 12px;
-    padding: 8px;
-    backdrop-filter: blur(14px);
+    background: rgba(5, 5, 20, 0.6);
+    border: 1px solid rgba(0, 230, 90, 0.3);
+    border-radius: 14px;
+    padding: 8px 8px 4px;
+    backdrop-filter: blur(10px);
     box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 
 .gesture-panel video {
-    width: 128px;
-    height: 96px;
-    border-radius: 7px;
-    object-fit: cover;
-    transform: scaleX(-1);   /* 거울 모드 */
-    background: #000;
-    display: block;
+    /* MediaPipe 처리용으로 DOM에만 존재, 화면에는 표시 안 함 */
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
 }
 
 .gesture-label {
@@ -1133,16 +1133,14 @@ body {
 /* 제스처 비디오 래퍼 (랜드마크 캔버스 포함) */
 .gesture-video-wrap {
     position: relative;
-    width: 128px;
-    height: 96px;
+    width: 200px;
+    height: 150px;
 }
 
 .gesture-canvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 128px;
-    height: 96px;
-    border-radius: 7px;
+    display: block;
+    width: 200px;
+    height: 150px;
+    border-radius: 8px;
     pointer-events: none;
-    z-index: 2;
 }

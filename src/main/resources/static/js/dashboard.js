@@ -173,8 +173,8 @@ function initSolarBackground() {
 function spawnShootingStar() {
     const side = Math.random() < 0.5 ? 'top' : 'left';
     shootingStars.push({
-        x: side === 'top' ? Math.random() * canvas.width : 0,
-        y: side === 'top' ? 0 : Math.random() * canvas.height * 0.5,
+        x: side === 'top' ? Math.random() * overlayCanvas.width : 0,
+        y: side === 'top' ? 0 : Math.random() * overlayCanvas.height * 0.5,
         len: Math.random() * 120 + 60, speed: Math.random() * 4 + 3,
         alpha: 1, angle: Math.PI / 4 + (Math.random() - 0.5) * 0.4,
         width: Math.random() * 1.5 + 0.5
@@ -396,8 +396,8 @@ function render() {
 
         // 화면 좌표 계산 (이모지·말풍선·수퍼노바가 p.x/p.y 사용)
         const vec = p.group.position.clone().project(camera);
-        p.x = (vec.x + 1) / 2 * canvas.width;
-        p.y = -(vec.y - 1) / 2 * canvas.height;
+        p.x = (vec.x + 1) / 2 * canvas.clientWidth;
+        p.y = -(vec.y - 1) / 2 * canvas.clientHeight;
 
         // DOM 라벨 위치 갱신
         if (p.labelDiv) {
@@ -445,8 +445,8 @@ function lightenColor(hex, amount) {
 
 // ── 이모지 파티클 ────────────────────────────────────────────────────
 function triggerEmojiParticle(partnerId, emoji, incoming = false) {
-    const cx     = canvas.width / 2;
-    const cy     = canvas.height / 2;
+    const cx     = overlayCanvas.width / 2;
+    const cy     = overlayCanvas.height / 2;
     const planet = planets.find(p => Number(p.partnerId) === Number(partnerId));
     if (!planet) return;
     const startX = incoming ? planet.x : cx;
@@ -944,7 +944,7 @@ function submitWish() {
 
 function spawnWishStar(text) {
     shootingStars.push({
-        x: 0, y: Math.random() * canvas.height * 0.4,
+        x: 0, y: Math.random() * overlayCanvas.height * 0.4,
         len: Math.random() * 120 + 80, speed: Math.random() * 6 + 5,
         alpha: 1, angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
         width: 2, wish: text
@@ -1298,7 +1298,7 @@ async function startGestureControl() {
     videoEl.srcObject = gestureStream;
     await videoEl.play();
     const gCvs = document.getElementById('gestureCanvas');
-    if (gCvs) { gCvs.width = 128; gCvs.height = 96; }  // CSS 표시 크기와 일치 (축소 왜곡 방지)
+    if (gCvs) { gCvs.width = 200; gCvs.height = 150; }
 
     gestureHands = new Hands({
         locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
