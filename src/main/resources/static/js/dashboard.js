@@ -1298,7 +1298,7 @@ async function startGestureControl() {
     videoEl.srcObject = gestureStream;
     await videoEl.play();
     const gCvs = document.getElementById('gestureCanvas');
-    if (gCvs) { gCvs.width = videoEl.videoWidth || 320; gCvs.height = videoEl.videoHeight || 240; }
+    if (gCvs) { gCvs.width = 128; gCvs.height = 96; }  // CSS 표시 크기와 일치 (축소 왜곡 방지)
 
     gestureHands = new Hands({
         locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
