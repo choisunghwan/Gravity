@@ -212,7 +212,9 @@
 
 <!-- 웹캠 제스처 패널 (body 레벨 — Three.js 캔버스 stacking context 밖) -->
 <div id="gesturePanel" class="gesture-panel" style="display:none">
-    <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
+    <div class="gesture-video-wrap">
+        <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
+    </div>
     <div id="gestureLabel" class="gesture-label">✋ 손을 보여주세요</div>
 </div>
 

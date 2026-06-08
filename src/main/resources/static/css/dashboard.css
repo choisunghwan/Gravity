@@ -1117,6 +1117,16 @@ body {
     to   { box-shadow: 0 0 45px rgba(167,139,250,0.95), 0 0 90px rgba(167,139,250,0.4), 0 0 130px rgba(167,139,250,0.12); }
 }
 
+/* 제스처 캔버스 래퍼 (video는 body 레벨로 분리, canvas만 여기) */
+.gesture-video-wrap {
+    position: relative;
+    width: 200px;
+    height: 150px;
+    overflow: hidden;
+    background: #000;
+    border-radius: 8px;
+}
+
 .gesture-canvas {
     display: block;
     width: 200px;
