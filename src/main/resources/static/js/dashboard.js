@@ -1279,40 +1279,13 @@ let gestureRAF        = null;
 let gestureFrameBuf   = [];       // 최근 N프레임 제스처 버퍼
 const GESTURE_CONFIRM = 5;        // 동일 제스처가 이 프레임 수 연속 감지돼야 확정
 
-// ── MediaPipe WASM 프리로드 ────────────────────────────────────────
-// WASM은 수 MB라 첫 방문 시 로드에 수 초 걸림. 페이지 로드 직후 blank frame을
-// 반복 전송해서 WASM 컴파일을 완료 상태로 만들어 둠.
-let _prewarmedHands   = null;
-let _gestureWasmReady = false;
-let _pokeTimer        = null;
-let _wasmReadyResolve = null;
-const _wasmReadyPromise = new Promise(r => { _wasmReadyResolve = r; });
-
-function _poke() {
-    if (_gestureWasmReady || !_prewarmedHands) return;
-    const tmp = document.createElement('canvas');
-    tmp.width = 4; tmp.height = 4;
-    _prewarmedHands.send({ image: tmp }).catch(() => {});
-    _pokeTimer = setTimeout(_poke, 600);
-}
-
-function preloadGestureModel() {
-    if (typeof Hands === 'undefined') return;
-    try {
-        _prewarmedHands = new Hands({
-            locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
-        });
-        _prewarmedHands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.65, minTrackingConfidence: 0.5 });
-        _prewarmedHands.onResults(() => {
-            if (_gestureWasmReady) return;
-            _gestureWasmReady = true;
-            clearTimeout(_pokeTimer);
-            _wasmReadyResolve();
-        });
-        _poke(); // blank frame 반복 전송 시작
-    } catch (_) {}
-}
-setTimeout(preloadGestureModel, 300);
+// WASM 파일 HTTP 캐시 워밍 (첫 방문 시 다운로드 시간 단축)
+setTimeout(() => {
+    ['hands_solution_simd_wasm_bin.wasm', 'hands_solution_simd_wasm_bin.js',
+     'hand_landmark_full.tflite'].forEach(f => {
+        fetch(`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`, { mode: 'cors' }).catch(() => {});
+    });
+}, 400);
 
 // 손가락 랜드마크 인덱스 (index, middle, ring, pinky)
 const FINGER_TIPS = [8, 12, 16, 20];
@@ -1346,7 +1319,6 @@ function toggleGestureControl() {
 async function startGestureControl() {
     const btn     = document.getElementById('gestureBtn');
     const labelEl = document.getElementById('gestureLabel');
-    const panel   = document.getElementById('gesturePanel');
 
     if (typeof Hands === 'undefined') {
         showToast('❌ 제스처 라이브러리 로드 중… 잠시 후 다시 시도하세요');
@@ -1368,36 +1340,23 @@ async function startGestureControl() {
     const gCvs = document.getElementById('gestureCanvas');
     if (gCvs) { gCvs.width = 200; gCvs.height = 150; }
 
-    // 패널 즉시 표시
-    panel.style.display = 'flex';
-    if (btn) btn.classList.add('gesture-on');
-
-    // WASM 미준비 시 로딩 표시 후 대기 (최대 20초)
-    if (!_gestureWasmReady) {
-        if (labelEl) labelEl.textContent = '⏳ 모델 로딩 중...';
-        if (!_prewarmedHands) preloadGestureModel(); // preload가 아직 안 됐으면 지금 시작
-        await Promise.race([_wasmReadyPromise, new Promise(r => setTimeout(r, 20000))]);
-    }
-
-    // poke 루프 중단 후 인스턴스 인수인계 (이중 send 방지)
-    clearTimeout(_pokeTimer);
-    _pokeTimer = null;
-    if (_prewarmedHands) {
-        gestureHands = _prewarmedHands;
-        _prewarmedHands = null;
-    } else {
-        gestureHands = new Hands({
-            locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
-        });
-        gestureHands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.65, minTrackingConfidence: 0.5 });
-    }
+    gestureHands = new Hands({
+        locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
+    });
+    gestureHands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 0,
+        minDetectionConfidence: 0.65,
+        minTrackingConfidence: 0.5
+    });
     gestureHands.onResults(onGestureResults);
 
     gestureActive = true;
     handPresent   = false;
     prevHandX     = null;
-    if (labelEl) labelEl.textContent = '✋ 손을 보여주세요';
-    showToast('✋ 손을 좌우로 움직여 태양계를 회전하세요');
+    document.getElementById('gesturePanel').style.display = 'flex';
+    if (btn) btn.classList.add('gesture-on');
+    if (labelEl) labelEl.textContent = '⏳ 모델 로딩 중...';
 
     async function processFrame() {
         if (!gestureActive) return;
@@ -1468,13 +1427,19 @@ function onGestureResults(results) {
     const labelEl = document.getElementById('gestureLabel');
     const gCvs    = document.getElementById('gestureCanvas');
 
+    // 첫 onResults = 모델 로드 완료 → 로딩 레이블 해제
+    if (labelEl && labelEl.textContent === '⏳ 모델 로딩 중...') {
+        labelEl.textContent = '✋ 손을 보여주세요';
+        showToast('✋ 손을 좌우로 움직여 태양계를 회전하세요');
+    }
+
     // 손 없음 → 상태 초기화, 자동 회전 복귀
     if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
         handPresent         = false;
         currentGestureState = 'IDLE';
         gestureFrameBuf     = [];
         if (gCvs) gCvs.getContext('2d').clearRect(0, 0, gCvs.width, gCvs.height);
-        if (labelEl) labelEl.textContent = '✋ 손을 보여주세요';
+        if (labelEl && labelEl.textContent !== '⏳ 모델 로딩 중...') labelEl.textContent = '✋ 손을 보여주세요';
         return;
     }
 
