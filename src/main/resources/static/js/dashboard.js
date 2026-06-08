@@ -1279,6 +1279,25 @@ let gestureRAF        = null;
 let gestureFrameBuf   = [];       // 최근 N프레임 제스처 버퍼
 const GESTURE_CONFIRM = 5;        // 동일 제스처가 이 프레임 수 연속 감지돼야 확정
 
+// 페이지 로드 직후 WASM 프리로드 (첫 클릭 시 레이스 컨디션 방지)
+let prewarmedHands = null;
+function preloadGestureModel() {
+    if (typeof Hands === 'undefined') return;
+    try {
+        const h = new Hands({
+            locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
+        });
+        h.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.65, minTrackingConfidence: 0.5 });
+        h.onResults(() => {});
+        prewarmedHands = h;
+        // 4×4 blank canvas 전송으로 WASM 컴파일 트리거
+        const tmp = document.createElement('canvas');
+        tmp.width = 4; tmp.height = 4;
+        h.send({ image: tmp }).catch(() => {});
+    } catch (_) {}
+}
+setTimeout(preloadGestureModel, 800);
+
 // 손가락 랜드마크 인덱스 (index, middle, ring, pinky)
 const FINGER_TIPS = [8, 12, 16, 20];
 const FINGER_PIPS = [6, 10, 14, 18];
@@ -1331,20 +1350,23 @@ async function startGestureControl() {
     const gCvs = document.getElementById('gestureCanvas');
     if (gCvs) { gCvs.width = 200; gCvs.height = 150; }
 
-    gestureHands = new Hands({
-        locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
-    });
-    gestureHands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: 0,
-        minDetectionConfidence: 0.65,
-        minTrackingConfidence: 0.5
-    });
-    gestureHands.onResults(onGestureResults);
-
-    // WASM + 모델 완전 로드 대기 (레이스 컨디션 방지 — 캐시 미스 시 프레임 드롭)
-    showToast('⏳ 제스처 모델 로딩 중…');
-    await gestureHands.initialize();
+    // 프리웜 인스턴스 재사용 (WASM 이미 로드됨) → 없으면 새로 생성
+    if (prewarmedHands) {
+        gestureHands = prewarmedHands;
+        prewarmedHands = null;
+        gestureHands.onResults(onGestureResults);
+    } else {
+        gestureHands = new Hands({
+            locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
+        });
+        gestureHands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 0,
+            minDetectionConfidence: 0.65,
+            minTrackingConfidence: 0.5
+        });
+        gestureHands.onResults(onGestureResults);
+    }
 
     gestureActive = true;
     handPresent   = false;
