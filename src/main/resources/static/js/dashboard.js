@@ -88,7 +88,7 @@ let bigBangTimer   = 0;
 let originalPlanetPositions = [];
 
 let shootingStars = [];
-let spaceObjects  = [];
+let spaceObj3D = [];
 
 // ── 궤도 링 상수 ────────────────────────────────────────────────────
 const ORBIT_RINGS = [
@@ -171,96 +171,130 @@ function initSolarBackground() {
     });
 }
 
-// ── 우주 오브젝트 (UFO / 위성 / 로켓) ──────────────────────────────────
-function spawnSpaceObject() {
-    const types = [
-        { emoji: '🛸', kind: 'ufo',       size: 28 },
-        { emoji: '🛰️', kind: 'satellite', size: 24 },
-        { emoji: '🚀', kind: 'rocket',    size: 26 },
-    ];
-    const t = types[Math.floor(Math.random() * types.length)];
-    const W = overlayCanvas.width, H = overlayCanvas.height;
-    let x, y, vx, vy, rotation = 0;
+// ── 우주 오브젝트 3D (UFO / 위성 / 로켓) — THREE.Sprite + CanvasTexture ──
+function createEmojiTexture(emoji) {
+    const size = 128;
+    const cv   = document.createElement('canvas');
+    cv.width = cv.height = size;
+    const ctx  = cv.getContext('2d');
+    ctx.font   = `${Math.floor(size * 0.72)}px Arial`;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, size / 2, size / 2);
+    return new THREE.CanvasTexture(cv);
+}
 
-    if (t.kind === 'ufo') {
-        const fromLeft = Math.random() < 0.5;
-        x  = fromLeft ? -40 : W + 40;
-        y  = H * (0.1 + Math.random() * 0.55);
-        const speed = 0.35 + Math.random() * 0.4;
-        vx = fromLeft ? speed : -speed;
-        vy = 0;
-    } else if (t.kind === 'satellite') {
-        const fromLeft = Math.random() < 0.5;
-        x  = fromLeft ? -40 : W * (0.3 + Math.random() * 0.7);
-        y  = fromLeft ? H * (0.05 + Math.random() * 0.45) : -40;
-        const speed = 0.9 + Math.random() * 0.6;
-        const dx = W * 0.5 - x, dy = H * 0.6 - y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        vx = (dx / dist) * speed;
-        vy = (dy / dist) * speed;
-        rotation = Math.atan2(vy, vx);
-    } else {
-        x  = W * (0.1 + Math.random() * 0.8);
-        y  = H + 40;
-        vx = (Math.random() - 0.5) * 1.4;
-        vy = -(1.6 + Math.random() * 1.0);
-        rotation = Math.atan2(vy, vx) + Math.PI / 2;
+function spawnSpaceObject3D() {
+    const types = [
+        { emoji: '🛸', kind: 'ufo',       scale: 70 },
+        { emoji: '🛰️', kind: 'satellite', scale: 58 },
+        { emoji: '🚀', kind: 'rocket',    scale: 64 },
+    ];
+    const t        = types[Math.floor(Math.random() * types.length)];
+    const texture  = createEmojiTexture(t.emoji);
+    const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0 });
+    const sprite   = new THREE.Sprite(material);
+    sprite.scale.set(t.scale, t.scale, 1);
+
+    // 태양계 궤도 바깥 (반지름 800~1500), 높이 ±400 에 스폰
+    const spawnAngle = Math.random() * Math.PI * 2;
+    const radius     = 800 + Math.random() * 700;
+    sprite.position.set(
+        Math.cos(spawnAngle) * radius,
+        (Math.random() - 0.5) * 800,
+        Math.sin(spawnAngle) * radius
+    );
+    scene.add(sprite);
+
+    // 이동 방향: 대략 태양계 반대편 쪽으로
+    const moveAngle = spawnAngle + Math.PI + (Math.random() - 0.5) * 1.2;
+    const speed     = 0.5 + Math.random() * 0.9;
+    const vy        = t.kind === 'rocket'
+        ? 0.9 + Math.random() * 0.7          // 로켓은 위쪽으로 상승
+        : (Math.random() - 0.5) * 0.5;
+
+    // 로켓 불꽃 trail 스프라이트 (🔥 3개, 뒤따라감)
+    const trail = [];
+    if (t.kind === 'rocket') {
+        const fireTexture = createEmojiTexture('🔥');
+        for (let i = 0; i < 3; i++) {
+            const fs  = 38 - i * 10;
+            const fm  = new THREE.SpriteMaterial({ map: fireTexture, transparent: true, opacity: 0 });
+            const fsp = new THREE.Sprite(fm);
+            fsp.scale.set(fs, fs, 1);
+            fsp.position.copy(sprite.position);
+            scene.add(fsp);
+            trail.push({ sprite: fsp, delay: (i + 1) * 4 }); // 프레임 지연
+        }
     }
 
-    spaceObjects.push({ ...t, x, y, vx, vy, rotation, alpha: 0, born: Date.now(), trail: [], blinkTimer: 0 });
+    spaceObj3D.push({
+        sprite, kind: t.kind, trail,
+        vx: Math.cos(moveAngle) * speed,
+        vy,
+        vz: Math.sin(moveAngle) * speed,
+        born: Date.now(),
+        life: 45000 + Math.random() * 30000,
+        blinkTimer: 0,
+        posHistory: [], // 로켓 trail 위치 기록
+    });
 }
 
 function scheduleSpaceObject() {
-    setTimeout(() => { spawnSpaceObject(); scheduleSpaceObject(); }, 15000 + Math.random() * 25000);
+    setTimeout(() => { spawnSpaceObject3D(); scheduleSpaceObject(); }, 15000 + Math.random() * 25000);
 }
 
-function drawSpaceObjects() {
-    if (!overlayCtx) return;
-    const W = overlayCanvas.width, H = overlayCanvas.height;
+function updateSpaceObjects3D() {
     const now = Date.now();
-
-    spaceObjects = spaceObjects.filter(o => {
-        if (o.x < -120 || o.x > W + 120 || o.y < -120 || o.y > H + 120) return false;
-
-        o.alpha = Math.min(1, (now - o.born) / 1000);
-
-        o.x += o.vx;
-        if (o.kind === 'ufo') {
-            o.y += Math.sin(now * 0.0012 + o.born * 0.001) * 0.35;
-        } else {
-            o.y += o.vy;
+    spaceObj3D = spaceObj3D.filter(o => {
+        const age = now - o.born;
+        if (age > o.life) {
+            scene.remove(o.sprite);
+            o.sprite.material.map.dispose();
+            o.sprite.material.dispose();
+            o.trail.forEach(f => {
+                scene.remove(f.sprite);
+                f.sprite.material.map.dispose();
+                f.sprite.material.dispose();
+            });
+            return false;
         }
 
-        let drawAlpha = o.alpha * 0.88;
+        const fadeIn  = Math.min(1, age / 2000);
+        const fadeOut = Math.min(1, (o.life - age) / 3000);
+        let opacity   = fadeIn * fadeOut * 0.92;
+
+        // 위성 깜빡임 (신호음 효과)
         if (o.kind === 'satellite') {
             o.blinkTimer++;
-            if (o.blinkTimer % 50 < 5) drawAlpha *= 0.15;
+            if (o.blinkTimer % 55 < 5) opacity *= 0.08;
+        }
+        o.sprite.material.opacity = opacity;
+
+        // 위치 업데이트
+        o.sprite.position.x += o.vx;
+        o.sprite.position.z += o.vz;
+        if (o.kind === 'ufo') {
+            o.sprite.position.y += Math.sin(now * 0.001 + o.born * 0.001) * 0.7;
+        } else {
+            o.sprite.position.y += o.vy;
         }
 
+        // 로켓 🔥 trail: 이전 위치 따라가기
         if (o.kind === 'rocket') {
-            o.trail.push({ x: o.x, y: o.y, a: 0.55 });
-            if (o.trail.length > 9) o.trail.shift();
-            o.trail.forEach((p, i) => {
-                p.a *= 0.80;
-                overlayCtx.save();
-                overlayCtx.globalAlpha = p.a;
-                overlayCtx.font = `${9 + i}px Arial`;
-                overlayCtx.textAlign = 'center';
-                overlayCtx.textBaseline = 'middle';
-                overlayCtx.fillText('🔥', p.x, p.y + 4);
-                overlayCtx.restore();
+            o.posHistory.push(o.sprite.position.clone());
+            if (o.posHistory.length > 15) o.posHistory.shift();
+            o.trail.forEach((f, i) => {
+                const idx = o.posHistory.length - 1 - f.delay;
+                if (idx >= 0) {
+                    f.sprite.position.copy(o.posHistory[idx]);
+                    f.sprite.material.opacity = opacity * (0.7 - i * 0.2);
+                } else {
+                    f.sprite.material.opacity = 0;
+                }
             });
         }
 
-        overlayCtx.save();
-        overlayCtx.globalAlpha = drawAlpha;
-        overlayCtx.translate(o.x, o.y);
-        if (o.rotation) overlayCtx.rotate(o.rotation);
-        overlayCtx.font = `${o.size}px Arial`;
-        overlayCtx.textAlign = 'center';
-        overlayCtx.textBaseline = 'middle';
-        overlayCtx.fillText(o.emoji, 0, 0);
-        overlayCtx.restore();
         return true;
     });
 }
@@ -523,7 +557,6 @@ function render() {
     if (overlayCtx) {
         overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         drawShootingStars();
-        drawSpaceObjects();
         drawSpeechBubbles();
         drawEmojiParticles();
         drawVoiceWaves();
@@ -531,6 +564,7 @@ function render() {
 
     if (bigBangActive) updateBigBang3D();
     updateSupernovaEffects3D();
+    updateSpaceObjects3D();
 
     // 카메라 제어: 제스처(지속 상태) > 자동 회전
     if (gestureActive && handPresent) {
