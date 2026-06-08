@@ -72,10 +72,13 @@
         bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 120px) !important;
     }
 
-    /* 제스처 패널: 바텀 탭바 + 모바일 시트(52px) 위에 중앙 배치 */
+    /* 제스처 패널: 바텀 탭바 위 중앙 */
     .gesture-panel {
         bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 60px) !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin: 0 auto !important;
+        width: fit-content !important;
+        transform: none !important;
     }
 }

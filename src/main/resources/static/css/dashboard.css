@@ -159,8 +159,11 @@ body {
 .gesture-panel {
     position: fixed;
     bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: fit-content;
+    transform: none;
     z-index: 150;
     display: flex;
     flex-direction: column;

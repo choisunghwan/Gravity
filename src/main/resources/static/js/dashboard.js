@@ -1384,8 +1384,9 @@ async function startGestureControl() {
     const gCvs = document.getElementById('gestureCanvas');
     if (gCvs) { gCvs.width = 200; gCvs.height = 150; }
 
-    // 패널 즉시 표시
-    document.getElementById('gesturePanel').style.display = 'flex';
+    // 패널 즉시 표시 — 위치도 JS로 강제 (CSS 캐시/우선순위 무관하게 중앙 보장)
+    const panel = document.getElementById('gesturePanel');
+    panel.style.cssText = 'display:flex;position:fixed;bottom:80px;left:0;right:0;margin:0 auto;width:fit-content;transform:none;z-index:150;';
     if (btn) btn.classList.add('gesture-on');
 
     // WASM 미준비 시 로딩 대기 (최대 20초)
@@ -1435,7 +1436,8 @@ function stopGestureControl() {
     if (gestureHands)  { gestureHands.close(); gestureHands = null; }
     const videoEl = document.getElementById('gestureVideo');
     if (videoEl) { videoEl.srcObject = null; videoEl.style.display = ''; }
-    document.getElementById('gesturePanel').style.display = 'none';
+    const panel = document.getElementById('gesturePanel');
+    panel.style.cssText = 'display:none;';
     const btn = document.getElementById('gestureBtn');
     if (btn) btn.classList.remove('gesture-on');
     showToast('손 제스처 회전 비활성화 — 자동 회전 복귀');
