@@ -174,15 +174,7 @@ body {
     box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 
-.gesture-panel video {
-    /* MediaPipe 처리용 — transform으로 시각적으로만 숨김 (0x0이면 프레임 디코딩 중단) */
-    position: absolute;
-    top: 0; left: 0;
-    width: 200px;
-    height: 150px;
-    transform: translateX(-9999px);
-    pointer-events: none;
-}
+/* gestureVideo는 body 직접 자식으로 이동 — CSS 불필요 */
 
 .gesture-label {
     font-size: 11px;
@@ -1123,14 +1115,6 @@ body {
 @keyframes centerPlanetGlow {
     from { box-shadow: 0 0 20px rgba(167,139,250,0.55), 0 0 40px rgba(167,139,250,0.2); }
     to   { box-shadow: 0 0 45px rgba(167,139,250,0.95), 0 0 90px rgba(167,139,250,0.4), 0 0 130px rgba(167,139,250,0.12); }
-}
-
-/* 제스처 비디오 래퍼 (랜드마크 캔버스 포함) */
-.gesture-video-wrap {
-    position: relative;
-    width: 200px;
-    height: 150px;
-    overflow: hidden;
 }
 
 .gesture-canvas {

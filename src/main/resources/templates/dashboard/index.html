@@ -206,12 +206,13 @@
     </div>
 </div>
 
+<!-- MediaPipe 처리용 웹캠 (body 직접 자식 — iOS 하드웨어 오버레이 화면 밖으로 격리) -->
+<video id="gestureVideo" autoplay muted playsinline
+       style="position:fixed;top:-9999px;left:-9999px;width:200px;height:150px;pointer-events:none;"></video>
+
 <!-- 웹캠 제스처 패널 (body 레벨 — Three.js 캔버스 stacking context 밖) -->
 <div id="gesturePanel" class="gesture-panel" style="display:none">
-    <div class="gesture-video-wrap">
-        <video id="gestureVideo" autoplay muted playsinline></video>
-        <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
-    </div>
+    <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
     <div id="gestureLabel" class="gesture-label">✋ 손을 보여주세요</div>
 </div>
 
