@@ -175,11 +175,12 @@ body {
 }
 
 .gesture-panel video {
-    /* MediaPipe 처리용으로 DOM에만 존재, 화면에는 표시 안 함 */
+    /* MediaPipe 처리용 — 어느 브라우저/모바일에서도 화면에 표시 안 함 */
     position: absolute;
+    top: 0; left: 0;
+    width: 0;
+    height: 0;
     opacity: 0;
-    width: 1px;
-    height: 1px;
     pointer-events: none;
 }
 
@@ -667,12 +668,6 @@ body {
         gap: 10px;
     }
 
-    .sheet-drag-pill {
-        width: 36px; height: 4px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 2px;
-    }
-
     .sheet-drag-label {
         font-size: 13px;
         font-weight: 600;
@@ -1135,6 +1130,7 @@ body {
     position: relative;
     width: 200px;
     height: 150px;
+    overflow: hidden;
 }
 
 .gesture-canvas {

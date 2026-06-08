@@ -1154,7 +1154,6 @@ function initMobileSheet() {
     sheet.id        = 'mobileSheet';
     sheet.innerHTML = `
         <div class="sheet-drag-handle" id="sheetDragHandle" onclick="toggleMobileSheet()">
-            <div class="sheet-drag-pill"></div>
             <span class="sheet-drag-label" id="sheetLabel">▲ 내 우주</span>
         </div>
         <div class="sheet-tab-bar" id="sheetTabBar" style="display:none">
