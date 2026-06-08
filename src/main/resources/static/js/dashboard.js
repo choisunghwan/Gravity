@@ -63,6 +63,7 @@ let planets       = [];
 let starField     = null;
 let animFrame;
 let gestureActive = false;   // render()보다 먼저 선언 (TDZ 방지)
+const voiceWaveRings = [];   // render()보다 먼저 선언 (TDZ 방지)
 
 let chatOpen           = false;
 let currentPartnerId   = null;
@@ -349,6 +350,25 @@ function initPlanets() {
             _scaleTarget: 1.0
         };
     });
+}
+
+// ── 음성 파동 오버레이 (render보다 먼저 정의) ────────────────────────
+function drawVoiceWaves() {
+    if (!overlayCtx || voiceWaveRings.length === 0) return;
+    const cx = overlayCanvas.width  / 2;
+    const cy = overlayCanvas.height / 2;
+    for (let i = voiceWaveRings.length - 1; i >= 0; i--) {
+        const ring = voiceWaveRings[i];
+        if (ring.delay > 0) { ring.delay--; continue; }
+        ring.r     += ring.speed;
+        ring.alpha -= 0.008;
+        if (ring.alpha <= 0) { voiceWaveRings.splice(i, 1); continue; }
+        overlayCtx.beginPath();
+        overlayCtx.arc(cx, cy, ring.r, 0, Math.PI * 2);
+        overlayCtx.strokeStyle = `rgba(167,139,250,${ring.alpha.toFixed(3)})`;
+        overlayCtx.lineWidth   = 2;
+        overlayCtx.stroke();
+    }
 }
 
 // ── 렌더 루프 ────────────────────────────────────────────────────────
@@ -1443,7 +1463,7 @@ let voiceActive           = false;
 let voiceRecognition      = null;
 let voiceDeactivateTimer  = null;
 let voiceSpawnInterval    = null;
-const voiceWaveRings      = [];
+// voiceWaveRings는 상단에 선언됨 (TDZ 방지)
 
 function toggleVoiceAssistant() {
     voiceListening ? stopVoiceAssistant() : startVoiceAssistant();
@@ -1590,24 +1610,6 @@ function highlightOnlinePlanets(online) {
 function spawnVoiceWaveSet() {
     for (let i = 0; i < 3; i++) {
         voiceWaveRings.push({ r: 30, alpha: 0.7 - i * 0.15, speed: 1.8 + i * 0.4, delay: i * 18 });
-    }
-}
-
-function drawVoiceWaves() {
-    if (!overlayCtx || voiceWaveRings.length === 0) return;
-    const cx = overlayCanvas.width  / 2;
-    const cy = overlayCanvas.height / 2;
-    for (let i = voiceWaveRings.length - 1; i >= 0; i--) {
-        const ring = voiceWaveRings[i];
-        if (ring.delay > 0) { ring.delay--; continue; }
-        ring.r     += ring.speed;
-        ring.alpha -= 0.008;
-        if (ring.alpha <= 0) { voiceWaveRings.splice(i, 1); continue; }
-        overlayCtx.beginPath();
-        overlayCtx.arc(cx, cy, ring.r, 0, Math.PI * 2);
-        overlayCtx.strokeStyle = `rgba(167,139,250,${ring.alpha.toFixed(3)})`;
-        overlayCtx.lineWidth   = 2;
-        overlayCtx.stroke();
     }
 }
 
