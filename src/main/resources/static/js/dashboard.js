@@ -1342,6 +1342,10 @@ async function startGestureControl() {
     });
     gestureHands.onResults(onGestureResults);
 
+    // WASM + 모델 완전 로드 대기 (레이스 컨디션 방지 — 캐시 미스 시 프레임 드롭)
+    showToast('⏳ 제스처 모델 로딩 중…');
+    await gestureHands.initialize();
+
     gestureActive = true;
     handPresent   = false;
     prevHandX     = null;
