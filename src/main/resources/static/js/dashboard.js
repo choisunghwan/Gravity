@@ -1279,6 +1279,11 @@ let gestureRAF        = null;
 let gestureFrameBuf   = [];       // 최근 N프레임 제스처 버퍼
 const GESTURE_CONFIRM = 5;        // 동일 제스처가 이 프레임 수 연속 감지돼야 확정
 
+// display:none 비디오에서 MediaPipe로 프레임 전달용 오프스크린 캔버스
+// (iOS 하드웨어 오버레이 완전 차단: display:none은 렌더링 트리에서 완전 제거)
+let _gOffCanvas = null;
+let _gOffCtx    = null;
+
 // ── MediaPipe WASM 워밍업 ─────────────────────────────────────────
 // 첫 방문 시 WASM 다운로드+컴파일에 수 초 걸림.
 // 페이지 로드 직후 별도 인스턴스로 blank frame을 순차적으로 보내
@@ -1368,6 +1373,14 @@ async function startGestureControl() {
     const videoEl = document.getElementById('gestureVideo');
     videoEl.srcObject = gestureStream;
     await videoEl.play();
+    // play() 해결 후 display:none — iOS 하드웨어 오버레이 완전 차단
+    // getUserMedia 스트림은 hidden 상태에서도 내부 프레임 버퍼 계속 업데이트됨
+    videoEl.style.display = 'none';
+    if (!_gOffCanvas) {
+        _gOffCanvas = document.createElement('canvas');
+        _gOffCanvas.width = 320; _gOffCanvas.height = 240;
+        _gOffCtx = _gOffCanvas.getContext('2d');
+    }
     const gCvs = document.getElementById('gestureCanvas');
     if (gCvs) { gCvs.width = 200; gCvs.height = 150; }
 
@@ -1402,7 +1415,9 @@ async function startGestureControl() {
     async function processFrame() {
         if (!gestureActive) return;
         if (videoEl.readyState >= 2) {
-            try { await gestureHands.send({ image: videoEl }); } catch (_) {}
+            // display:none 비디오 → 오프스크린 캔버스 경유 (하드웨어 오버레이 우회)
+            _gOffCtx.drawImage(videoEl, 0, 0, 320, 240);
+            try { await gestureHands.send({ image: _gOffCanvas }); } catch (_) {}
         }
         gestureRAF = requestAnimationFrame(processFrame);
     }
@@ -1419,7 +1434,7 @@ function stopGestureControl() {
     if (gestureStream) { gestureStream.getTracks().forEach(t => t.stop()); gestureStream = null; }
     if (gestureHands)  { gestureHands.close(); gestureHands = null; }
     const videoEl = document.getElementById('gestureVideo');
-    if (videoEl) videoEl.srcObject = null;
+    if (videoEl) { videoEl.srcObject = null; videoEl.style.display = ''; }
     document.getElementById('gesturePanel').style.display = 'none';
     const btn = document.getElementById('gestureBtn');
     if (btn) btn.classList.remove('gesture-on');
