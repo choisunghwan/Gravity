@@ -88,6 +88,7 @@ let bigBangTimer   = 0;
 let originalPlanetPositions = [];
 
 let shootingStars = [];
+let spaceObjects  = [];
 
 // ── 궤도 링 상수 ────────────────────────────────────────────────────
 const ORBIT_RINGS = [
@@ -167,6 +168,100 @@ function initSolarBackground() {
             scene.add(saturnRing);
             solarBgObjects.push(saturnRing);
         }
+    });
+}
+
+// ── 우주 오브젝트 (UFO / 위성 / 로켓) ──────────────────────────────────
+function spawnSpaceObject() {
+    const types = [
+        { emoji: '🛸', kind: 'ufo',       size: 28 },
+        { emoji: '🛰️', kind: 'satellite', size: 24 },
+        { emoji: '🚀', kind: 'rocket',    size: 26 },
+    ];
+    const t = types[Math.floor(Math.random() * types.length)];
+    const W = overlayCanvas.width, H = overlayCanvas.height;
+    let x, y, vx, vy, rotation = 0;
+
+    if (t.kind === 'ufo') {
+        const fromLeft = Math.random() < 0.5;
+        x  = fromLeft ? -40 : W + 40;
+        y  = H * (0.1 + Math.random() * 0.55);
+        const speed = 0.35 + Math.random() * 0.4;
+        vx = fromLeft ? speed : -speed;
+        vy = 0;
+    } else if (t.kind === 'satellite') {
+        const fromLeft = Math.random() < 0.5;
+        x  = fromLeft ? -40 : W * (0.3 + Math.random() * 0.7);
+        y  = fromLeft ? H * (0.05 + Math.random() * 0.45) : -40;
+        const speed = 0.9 + Math.random() * 0.6;
+        const dx = W * 0.5 - x, dy = H * 0.6 - y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        vx = (dx / dist) * speed;
+        vy = (dy / dist) * speed;
+        rotation = Math.atan2(vy, vx);
+    } else {
+        x  = W * (0.1 + Math.random() * 0.8);
+        y  = H + 40;
+        vx = (Math.random() - 0.5) * 1.4;
+        vy = -(1.6 + Math.random() * 1.0);
+        rotation = Math.atan2(vy, vx) + Math.PI / 2;
+    }
+
+    spaceObjects.push({ ...t, x, y, vx, vy, rotation, alpha: 0, born: Date.now(), trail: [], blinkTimer: 0 });
+}
+
+function scheduleSpaceObject() {
+    setTimeout(() => { spawnSpaceObject(); scheduleSpaceObject(); }, 15000 + Math.random() * 25000);
+}
+
+function drawSpaceObjects() {
+    if (!overlayCtx) return;
+    const W = overlayCanvas.width, H = overlayCanvas.height;
+    const now = Date.now();
+
+    spaceObjects = spaceObjects.filter(o => {
+        if (o.x < -120 || o.x > W + 120 || o.y < -120 || o.y > H + 120) return false;
+
+        o.alpha = Math.min(1, (now - o.born) / 1000);
+
+        o.x += o.vx;
+        if (o.kind === 'ufo') {
+            o.y += Math.sin(now * 0.0012 + o.born * 0.001) * 0.35;
+        } else {
+            o.y += o.vy;
+        }
+
+        let drawAlpha = o.alpha * 0.88;
+        if (o.kind === 'satellite') {
+            o.blinkTimer++;
+            if (o.blinkTimer % 50 < 5) drawAlpha *= 0.15;
+        }
+
+        if (o.kind === 'rocket') {
+            o.trail.push({ x: o.x, y: o.y, a: 0.55 });
+            if (o.trail.length > 9) o.trail.shift();
+            o.trail.forEach((p, i) => {
+                p.a *= 0.80;
+                overlayCtx.save();
+                overlayCtx.globalAlpha = p.a;
+                overlayCtx.font = `${9 + i}px Arial`;
+                overlayCtx.textAlign = 'center';
+                overlayCtx.textBaseline = 'middle';
+                overlayCtx.fillText('🔥', p.x, p.y + 4);
+                overlayCtx.restore();
+            });
+        }
+
+        overlayCtx.save();
+        overlayCtx.globalAlpha = drawAlpha;
+        overlayCtx.translate(o.x, o.y);
+        if (o.rotation) overlayCtx.rotate(o.rotation);
+        overlayCtx.font = `${o.size}px Arial`;
+        overlayCtx.textAlign = 'center';
+        overlayCtx.textBaseline = 'middle';
+        overlayCtx.fillText(o.emoji, 0, 0);
+        overlayCtx.restore();
+        return true;
     });
 }
 
@@ -428,6 +523,7 @@ function render() {
     if (overlayCtx) {
         overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         drawShootingStars();
+        drawSpaceObjects();
         drawSpeechBubbles();
         drawEmojiParticles();
         drawVoiceWaves();
@@ -713,6 +809,7 @@ window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resiz
 
 updateZoomButtons();
 scheduleShootingStar();
+scheduleSpaceObject();
 
 const params = new URLSearchParams(window.location.search);
 const newId  = params.get('new');
