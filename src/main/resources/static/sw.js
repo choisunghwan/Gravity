@@ -1,14 +1,10 @@
-const CACHE = 'gravity-v11';
+const CACHE = 'gravity-v12';
 
-// 앱 셸 (오프라인 폴백용) — CSS/JS는 HTML이 버전 파라미터로 관리하므로 여기선 제외
+// 앱 셸 (오프라인 폴백용) — JS/CSS는 HTML 버전 파라미터로 관리, SW 불개입
 const STATIC = [
     '/css/common.css',
-    '/css/feed.css',
-    '/css/mypage.css',
     '/css/responsive.css',
-    '/css/notifications.css',
-    '/css/planet.css',
-    '/css/landing.css',
+    '/css/bottom-nav.css',
     '/manifest.json',
     '/icon.svg',
     '/favicon.svg'
@@ -40,22 +36,14 @@ self.addEventListener('fetch', e => {
         return;
     }
 
-    // JS / CSS → 항상 네트워크 우선 (버전 파라미터로 캐시 무효화 보장)
-    // 배포 즉시 최신 코드 반영, 오프라인 시에만 캐시 폴백
+    // JS / CSS → SW 개입하지 않음
+    // HTML의 ?v=N 버전 파라미터가 HTTP 캐시를 정확히 제어하므로 SW 불필요
+    // SW가 개입하면 구 버전이 캐시에 남아 Ctrl+Shift+R 없이는 갱신 안 되는 문제 발생
     if (url.pathname.match(/\.(js|css)$/)) {
-        e.respondWith(
-            fetch(e.request).then(res => {
-                if (res.ok) {
-                    const clone = res.clone();
-                    caches.open(CACHE).then(c => c.put(e.request, clone));
-                }
-                return res;
-            }).catch(() => caches.match(e.request))
-        );
         return;
     }
 
-    // 이미지·폰트·아이콘 → 캐시 우선 (자주 변경되지 않음)
+    // 이미지·폰트·아이콘 → 캐시 우선
     if (url.pathname.match(/\.(svg|png|jpg|ico|woff2?)$/)) {
         e.respondWith(
             caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {

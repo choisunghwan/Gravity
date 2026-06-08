@@ -12,7 +12,24 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(() => {});
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    // 새 SW 설치 완료 시 페이지 자동 새로고침 (구 캐시 즉시 교체)
+                    reg.addEventListener('updatefound', () => {
+                        const nw = reg.installing;
+                        if (!nw) return;
+                        nw.addEventListener('statechange', () => {
+                            if (nw.state === 'activated') {
+                                window.location.reload();
+                            }
+                        });
+                    });
+                }).catch(() => {});
+
+                // skipWaiting + clients.claim 으로 SW 교체될 때 리로드
+                let _swReloaded = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!_swReloaded) { _swReloaded = true; window.location.reload(); }
+                });
             });
         }
     </script>
