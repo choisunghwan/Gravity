@@ -280,8 +280,9 @@ function initPlanets() {
     planetSpheres.forEach(s => { if (s.parent) scene.remove(s.parent); });
     planetSpheres = [];
     planets.forEach(p => {
-        if (p.labelDiv)  p.labelDiv.remove();
-        if (p.orbitLine) scene.remove(p.orbitLine);
+        if (p.labelDiv)   p.labelDiv.remove();
+        if (p.statusDiv)  p.statusDiv.remove();
+        if (p.orbitLine)  scene.remove(p.orbitLine);
     });
 
     initStars();
@@ -330,11 +331,20 @@ function initPlanets() {
         orbitLine.computeLineDistances();
         scene.add(orbitLine);
 
-        // DOM 라벨 (매 프레임 화면 좌표로 위치 갱신)
+        // DOM 이름 라벨 (매 프레임 화면 좌표로 위치 갱신)
         const labelDiv = document.createElement('div');
         labelDiv.className = 'planet-label-3d';
         labelDiv.textContent = c.partnerName;
         if (wrapper) wrapper.appendChild(labelDiv);
+
+        // 상태메세지 서브 라벨
+        let statusDiv = null;
+        if (c.partnerStatus) {
+            statusDiv = document.createElement('div');
+            statusDiv.className = 'planet-status-3d';
+            statusDiv.textContent = c.partnerStatus;
+            if (wrapper) wrapper.appendChild(statusDiv);
+        }
 
         planetSpheres.push(sphere);
 
@@ -347,7 +357,7 @@ function initPlanets() {
             x: 0, y: 0, hovered: false,
             gender: c.gender || '', emoji: c.partnerEmoji || null,
             status: c.partnerStatus || null,
-            group, sphere, onRing, labelDiv, orbitLine,
+            group, sphere, onRing, labelDiv, statusDiv, orbitLine,
             _scaleTarget: 1.0
         };
     });
@@ -406,6 +416,11 @@ function render() {
             p.labelDiv.classList.toggle('hovered', p.hovered);
             p.labelDiv.style.left = p.x + 'px';
             p.labelDiv.style.top  = (p.y + p.size + 12) + 'px';
+        }
+        if (p.statusDiv) {
+            p.statusDiv.style.left    = p.x + 'px';
+            p.statusDiv.style.top     = (p.y + p.size + 27) + 'px';
+            p.statusDiv.style.display = p.hovered ? 'none' : '';
         }
     });
 
@@ -694,7 +709,7 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resizeRenderer(); render(); });
+window.addEventListener('resize', () => { cancelAnimationFrame(animFrame); resizeRenderer(); requestAnimationFrame(render); });
 
 updateZoomButtons();
 scheduleShootingStar();
@@ -705,7 +720,9 @@ if (newId) setTimeout(() => showDetail(parseInt(newId)), 800);
 
 resizeRenderer();
 if (isMobile()) initMobileSheet();
-render();
+// requestAnimationFrame으로 감싸 브라우저 레이아웃 완료 후 첫 렌더링
+// (canvas.clientWidth = 0 race condition 방지 — 특히 iOS Safari 첫 방문)
+requestAnimationFrame(render);
 
 // ── 채팅 ──────────────────────────────────────────────────────────────
 
@@ -1372,8 +1389,8 @@ async function startGestureControl() {
 
     const videoEl = document.getElementById('gestureVideo');
     videoEl.srcObject = gestureStream;
-    await videoEl.play();
-    // play() 해결 후 display:none — iOS 하드웨어 오버레이 완전 차단
+    try { await videoEl.play(); } catch (_) { /* 자동재생 정책 무시 — drawImage는 여전히 작동 */ }
+    // play() 후 display:none — iOS 하드웨어 오버레이 완전 차단
     // getUserMedia 스트림은 hidden 상태에서도 내부 프레임 버퍼 계속 업데이트됨
     videoEl.style.display = 'none';
     if (!_gOffCanvas) {
