@@ -88,15 +88,6 @@
             <button id="voiceBtn"  class="zoom-btn voice-btn"   onclick="toggleVoiceAssistant()" title="음성 어시스턴트 (그래비티)">🎤</button>
         </div>
 
-        <!-- 웹캠 제스처 패널 -->
-        <div id="gesturePanel" class="gesture-panel" style="display:none">
-            <div class="gesture-video-wrap">
-                <video id="gestureVideo" autoplay muted playsinline></video>
-                <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
-            </div>
-            <div id="gestureLabel" class="gesture-label">✋ 손을 보여주세요</div>
-        </div>
-
         <!-- 점수 목록 -->
         <div class="score-list" id="scoreList">
             <div class="drawer-handle" id="drawerToggle">▲ 목록</div>
@@ -215,6 +206,15 @@
     </div>
 </div>
 
+<!-- 웹캠 제스처 패널 (body 레벨 — Three.js 캔버스 stacking context 밖) -->
+<div id="gesturePanel" class="gesture-panel" style="display:none">
+    <div class="gesture-video-wrap">
+        <video id="gestureVideo" autoplay muted playsinline></video>
+        <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
+    </div>
+    <div id="gestureLabel" class="gesture-label">✋ 손을 보여주세요</div>
+</div>
+
 <!-- 음성 어시스턴트 상태 표시 -->
 <div id="voiceStatus" class="voice-status" style="display:none">
     <span class="voice-status-dot"></span>
@@ -234,7 +234,7 @@
     const currentUserColor = /*[[${currentUser.planetColor ?: '#4FC3F7'}]]*/ '#4FC3F7';
     const currentUserStatus = /*[[${currentUser.statusMessage}]]*/ null;
 </script>
-<script th:src="@{/js/dashboard.js(v='12')}"></script>
+<script th:src="@{/js/dashboard.js(v='13')}"></script>
 <th:block th:replace="~{fragments/bottom-nav :: bottom-nav('dashboard')}"></th:block>
 </body>
 </html>
