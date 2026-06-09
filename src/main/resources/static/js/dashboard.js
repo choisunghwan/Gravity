@@ -590,7 +590,7 @@ function render() {
             case 'ZOOM_IN':  cameraDistance = Math.max(CAM_MIN, cameraDistance - 4); break;
             case 'ZOOM_OUT': cameraDistance = Math.min(CAM_MAX, cameraDistance + 4); break;
         }
-    } else {
+    } else if (!isDragging) {
         cameraAzimuth += AUTO_ROTATE_SPEED;
     }
     // 음성 명령 impulse velocity (항상 적용, 서서히 감쇠)
@@ -654,8 +654,31 @@ function extractEmoji(msg) {
     return match ? match[0] : '✉️';
 }
 
-// ── 마우스 이벤트 (Raycaster) ──────────────────────────────────────────
+// ── 마우스 드래그 회전 ────────────────────────────────────────────────
+let isDragging  = false;
+let dragLastX   = 0;
+let dragMoved   = false;
+
+canvas.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    isDragging = true;
+    dragLastX  = e.clientX;
+    dragMoved  = false;
+    canvas.style.cursor = 'grabbing';
+});
+
+canvas.addEventListener('mouseup',    () => { isDragging = false; canvas.style.cursor = 'default'; });
+canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'default'; });
+
+// ── 마우스 이벤트 (Raycaster + 드래그) ────────────────────────────────
 canvas.addEventListener('mousemove', e => {
+    if (isDragging) {
+        const dx = e.clientX - dragLastX;
+        if (Math.abs(dx) > 2) dragMoved = true;
+        cameraAzimuth += dx * 0.005;
+        dragLastX = e.clientX;
+        return;
+    }
     const rect = canvas.getBoundingClientRect();
     mouse.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
     mouse.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
@@ -668,6 +691,7 @@ canvas.addEventListener('mousemove', e => {
 });
 
 canvas.addEventListener('click', e => {
+    if (dragMoved) { dragMoved = false; return; }
     const rect = canvas.getBoundingClientRect();
     const mx   = e.clientX - rect.left;
     const my   = e.clientY - rect.top;
@@ -698,11 +722,16 @@ canvas.addEventListener('wheel', e => {
 let lastPinchDist = 0;
 let pinching      = false;
 
+let touchDragLastX = 0;
+
 canvas.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
         lastPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
                                    e.touches[0].clientY - e.touches[1].clientY);
         pinching = true;
+    } else if (e.touches.length === 1) {
+        touchDragLastX = e.touches[0].clientX;
+        dragMoved = false;
     }
 }, { passive: true });
 
@@ -713,6 +742,12 @@ canvas.addEventListener('touchmove', e => {
                              e.touches[0].clientY - e.touches[1].clientY);
         if (lastPinchDist > 0) setScale(d / lastPinchDist);
         lastPinchDist = d;
+    } else if (e.touches.length === 1 && !pinching) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - touchDragLastX;
+        if (Math.abs(dx) > 2) dragMoved = true;
+        cameraAzimuth += dx * 0.005;
+        touchDragLastX = e.touches[0].clientX;
     }
 }, { passive: false });
 
