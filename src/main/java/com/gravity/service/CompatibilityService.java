@@ -78,7 +78,7 @@ public class CompatibilityService {
 
     @Transactional
     public List<CompatibilityResultDto> getAllCompatibilities(User user) {
-        LocalDateTime weekAgo = LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(7);
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
         return compatibilityResultRepository.findAllByUserOrPartner(user)
                 .stream()
@@ -94,7 +94,12 @@ public class CompatibilityService {
                 })
                 .map(cr -> {
                     User partner = cr.getUser().getId().equals(user.getId()) ? cr.getPartner() : cr.getUser();
-                    int chatBonus = chatMessageRepository.countRecentMessages(user.getId(), partner.getId(), weekAgo);
+                    // 4주 가중합: 최근 주일수록 가중치 높음 (4,3,2,1)
+                    int w3 = chatMessageRepository.countMessagesBetween(user.getId(), partner.getId(), now.minusWeeks(1), now);
+                    int w2 = chatMessageRepository.countMessagesBetween(user.getId(), partner.getId(), now.minusWeeks(2), now.minusWeeks(1));
+                    int w1 = chatMessageRepository.countMessagesBetween(user.getId(), partner.getId(), now.minusWeeks(3), now.minusWeeks(2));
+                    int w0 = chatMessageRepository.countMessagesBetween(user.getId(), partner.getId(), now.minusWeeks(4), now.minusWeeks(3));
+                    int chatBonus = w3 * 4 + w2 * 3 + w1 * 2 + w0;
 
                     CompatibilityResultDto dto;
                     if (cr.getUser().getId().equals(user.getId())) {

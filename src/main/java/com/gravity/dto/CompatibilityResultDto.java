@@ -30,7 +30,9 @@ public class CompatibilityResultDto {
     private String analysisText;
     private String createdAt;
 
-    // 궁합 점수 기반 기본 궤도 + 채팅 빈도 보너스 반영
+    // 기본 궤도 (궁합 점수 기반) + 4주 활동 가중합으로 동적 조정
+    // chatBonus = 이번주×4 + 지난주×3 + 2주전×2 + 3주전×1
+    // 가중합 20 = 중립 (궤도 불변), 초과 = 당겨짐, 미달 = 밀려남
     public double getOrbitRadius() {
         double base;
         if (score >= 90) base = 140;
@@ -40,8 +42,16 @@ public class CompatibilityResultDto {
         else if (score >= 35) base = 430;
         else if (score >= 20) base = 520;
         else base = 615;
-        double bonus = Math.min(chatBonus * 8.0, base * 0.35);
-        return Math.max(80, base - bonus);
+
+        double neutral = 20.0;
+        double delta   = chatBonus - neutral;
+        double adjust;
+        if (delta >= 0) {
+            adjust =  Math.min(delta / 100.0, 1.0) * base * 0.40;  // 최대 40% 가까워짐
+        } else {
+            adjust = Math.max(delta / 20.0, -1.0) * base * 0.30;   // 최대 30% 멀어짐 (음수)
+        }
+        return Math.max(80, base - adjust);
     }
 
     public String getOrbitPlanetName() {
