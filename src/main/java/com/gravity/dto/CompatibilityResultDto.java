@@ -36,12 +36,12 @@ public class CompatibilityResultDto {
     public double getOrbitRadius() {
         double base;
         if (score >= 90) base = 140;
-        else if (score >= 77) base = 200;
-        else if (score >= 63) base = 265;
-        else if (score >= 49) base = 345;
-        else if (score >= 35) base = 430;
-        else if (score >= 20) base = 520;
-        else base = 615;
+        else if (score >= 77) base = 220;
+        else if (score >= 63) base = 320;
+        else if (score >= 49) base = 440;
+        else if (score >= 35) base = 590;
+        else if (score >= 20) base = 760;
+        else base = 950;
 
         double neutral = 20.0;
         double delta   = chatBonus - neutral;

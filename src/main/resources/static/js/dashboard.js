@@ -17,8 +17,8 @@ const overlayCanvas = document.getElementById('overlayCanvas');
 const overlayCtx    = overlayCanvas ? overlayCanvas.getContext('2d') : null;
 
 // 카메라 – 35° 위에서 내려다보는 뷰 + 수평 공전
-let cameraDistance = 1000;
-const CAM_MIN = 250, CAM_MAX = 3000;
+let cameraDistance = 1400;
+const CAM_MIN = 250, CAM_MAX = 4500;
 const CAMERA_TILT = 35 * Math.PI / 180;
 let cameraAzimuth    = 0;       // 수평 회전각 (radians)
 let rotationVelocity = 0;       // 제스처 관성
@@ -93,12 +93,12 @@ let spaceObj3D = [];
 // ── 궤도 링 상수 ────────────────────────────────────────────────────
 const ORBIT_RINGS = [
     { name: '수성',   orbit: 140,  color: '#A0A0A0', dotColor: '#B0B0B0', dotSize: 4,  angle: 0.8 },
-    { name: '금성',   orbit: 200,  color: '#C8A45A', dotColor: '#DEB87A', dotSize: 7,  angle: 2.1 },
-    { name: '화성',   orbit: 265,  color: '#C1440E', dotColor: '#E05020', dotSize: 5,  angle: 3.8 },
-    { name: '목성',   orbit: 345,  color: '#C88B3A', dotColor: '#D89B4A', dotSize: 14, angle: 1.2 },
-    { name: '토성',   orbit: 430,  color: '#EAD6B8', dotColor: '#EAD6B8', dotSize: 11, angle: 5.5, ring: true },
-    { name: '천왕성', orbit: 520,  color: '#7EC8E3', dotColor: '#8ED8F3', dotSize: 9,  angle: 4.1 },
-    { name: '해왕성', orbit: 615,  color: '#4169E1', dotColor: '#5179F1', dotSize: 8,  angle: 2.7 },
+    { name: '금성',   orbit: 220,  color: '#C8A45A', dotColor: '#DEB87A', dotSize: 7,  angle: 2.1 },
+    { name: '화성',   orbit: 320,  color: '#C1440E', dotColor: '#E05020', dotSize: 5,  angle: 3.8 },
+    { name: '목성',   orbit: 440,  color: '#C88B3A', dotColor: '#D89B4A', dotSize: 14, angle: 1.2 },
+    { name: '토성',   orbit: 590,  color: '#EAD6B8', dotColor: '#EAD6B8', dotSize: 11, angle: 5.5, ring: true },
+    { name: '천왕성', orbit: 760,  color: '#7EC8E3', dotColor: '#8ED8F3', dotSize: 9,  angle: 4.1 },
+    { name: '해왕성', orbit: 950,  color: '#4169E1', dotColor: '#5179F1', dotSize: 8,  angle: 2.7 },
 ];
 
 // ── 태양계 배경 (1회 초기화) ─────────────────────────────────────────
@@ -196,12 +196,12 @@ function spawnSpaceObject3D() {
     const sprite   = new THREE.Sprite(material);
     sprite.scale.set(t.scale, t.scale, 1);
 
-    // 태양계 궤도 바깥 (반지름 800~1500), 높이 ±400 에 스폰
+    // 태양계 궤도 바깥 (반지름 1100~2000), 높이 ±500 에 스폰
     const spawnAngle = Math.random() * Math.PI * 2;
-    const radius     = 800 + Math.random() * 700;
+    const radius     = 1100 + Math.random() * 900;
     sprite.position.set(
         Math.cos(spawnAngle) * radius,
-        (Math.random() - 0.5) * 800,
+        (Math.random() - 0.5) * 600,
         Math.sin(spawnAngle) * radius
     );
     scene.add(sprite);
