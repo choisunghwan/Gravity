@@ -89,6 +89,7 @@ let originalPlanetPositions = [];
 
 let shootingStars = [];
 let spaceObj3D = [];
+let deepSpaceObjects = [];
 
 // ── 궤도 링 상수 ────────────────────────────────────────────────────
 const ORBIT_RINGS = [
@@ -423,6 +424,155 @@ function initStars() {
     scene.add(starField2);
 }
 
+// ── 딥 스페이스 천체 (실제 천체 기반: 은하 · 성운 · 성단) ─────────────
+function buildTex(drawFn) {
+    const sz = 256, c = document.createElement('canvas');
+    c.width = c.height = sz;
+    drawFn(c.getContext('2d'), sz);
+    return new THREE.CanvasTexture(c);
+}
+
+function spiralGalaxyTex(tiltAngle) {
+    return buildTex((ctx, sz) => {
+        const cx = sz / 2, cy = sz / 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(tiltAngle || 0);
+        ctx.scale(1, 0.45);      // 기울어진 나선 디스크
+        ctx.translate(-cx, -cy);
+        // 디스크 헤이즈
+        const dg = ctx.createRadialGradient(cx, cy, 0, cx, cy, sz * 0.44);
+        dg.addColorStop(0,   'rgba(190,210,255,0.30)');
+        dg.addColorStop(0.55,'rgba(160,185,255,0.12)');
+        dg.addColorStop(1,   'rgba(130,160,255,0)');
+        ctx.fillStyle = dg; ctx.fillRect(0, 0, sz, sz);
+        // 나선팔 2개 — 랜덤 산란 포함
+        for (let arm = 0; arm < 2; arm++) {
+            for (let i = 0; i < 280; i++) {
+                const t     = i / 280;
+                const angle = arm * Math.PI + t * Math.PI * 3.4;
+                const r     = t * sz * 0.44;
+                const sx    = (Math.random() - 0.5) * sz * 0.055;
+                const sy    = (Math.random() - 0.5) * sz * 0.055;
+                const x = cx + Math.cos(angle) * r + sx;
+                const y = cy + Math.sin(angle) * r + sy;
+                const a = (1 - t) * 0.55 + 0.04;
+                ctx.fillStyle = `rgba(180,205,255,${a.toFixed(2)})`;
+                const s = 0.7 + (1 - t) * 1.9;
+                ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+        ctx.restore();
+        // 코어 (원래 좌표계)
+        const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, sz * 0.10);
+        cg.addColorStop(0,   'rgba(255,245,210,1.0)');
+        cg.addColorStop(0.4, 'rgba(255,220,160,0.75)');
+        cg.addColorStop(1,   'rgba(255,200,120,0)');
+        ctx.fillStyle = cg; ctx.fillRect(0, 0, sz, sz);
+    });
+}
+
+function ellipticalGalaxyTex() {
+    return buildTex((ctx, sz) => {
+        ctx.save();
+        ctx.translate(sz / 2, sz / 2);
+        ctx.rotate(0.4);
+        ctx.scale(1, 0.55);
+        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sz * 0.40);
+        g.addColorStop(0,    'rgba(255,248,210,0.95)');
+        g.addColorStop(0.28, 'rgba(245,225,175,0.60)');
+        g.addColorStop(0.60, 'rgba(220,195,145,0.25)');
+        g.addColorStop(1,    'rgba(190,160,110,0)');
+        ctx.fillStyle = g; ctx.fillRect(-sz / 2, -sz / 2, sz, sz);
+        ctx.restore();
+    });
+}
+
+function nebulaTex(r1,g1,b1, r2,g2,b2, r3,g3,b3) {
+    return buildTex((ctx, sz) => {
+        const cx = sz / 2, cy = sz / 2;
+        const clouds = [
+            { ox:  0,       oy:  0,       rad: sz*0.36, r:r1,g:g1,b:b1, a:0.50 },
+            { ox:-sz*0.13,  oy:-sz*0.09,  rad: sz*0.23, r:r2,g:g2,b:b2, a:0.42 },
+            { ox: sz*0.11,  oy: sz*0.11,  rad: sz*0.21, r:r3,g:g3,b:b3, a:0.38 },
+            { ox:-sz*0.09,  oy: sz*0.13,  rad: sz*0.18, r:r1,g:g1,b:b1, a:0.30 },
+            { ox: sz*0.15,  oy:-sz*0.13,  rad: sz*0.16, r:r2,g:g2,b:b2, a:0.26 },
+        ];
+        clouds.forEach(cl => {
+            const grad = ctx.createRadialGradient(cx+cl.ox, cy+cl.oy, 0, cx+cl.ox, cy+cl.oy, cl.rad);
+            grad.addColorStop(0, `rgba(${cl.r},${cl.g},${cl.b},${cl.a})`);
+            grad.addColorStop(1, `rgba(${cl.r},${cl.g},${cl.b},0)`);
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, sz, sz);
+        });
+        // 중심 밝은 별
+        const sg = ctx.createRadialGradient(cx, cy, 0, cx, cy, sz * 0.05);
+        sg.addColorStop(0, 'rgba(255,255,255,0.95)');
+        sg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sg; ctx.fillRect(0, 0, sz, sz);
+    });
+}
+
+function starClusterTex(r, g, b) {
+    return buildTex((ctx, sz) => {
+        const cx = sz / 2, cy = sz / 2;
+        const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, sz * 0.44);
+        bg.addColorStop(0,   `rgba(${r},${g},${b},0.25)`);
+        bg.addColorStop(0.5, `rgba(${r},${g},${b},0.10)`);
+        bg.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, sz, sz);
+        for (let i = 0; i < 90; i++) {
+            const dist  = Math.pow(Math.random(), 0.65) * sz * 0.42;
+            const angle = Math.random() * Math.PI * 2;
+            const x = cx + Math.cos(angle) * dist;
+            const y = cy + Math.sin(angle) * dist;
+            const a = 0.45 + Math.random() * 0.55;
+            const s = 0.7 + Math.random() * 2.0;
+            ctx.fillStyle = `rgba(${r},${g},${b},${a.toFixed(2)})`;
+            ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill();
+        }
+    });
+}
+
+function initDeepSpaceObjects() {
+    deepSpaceObjects.forEach(o => {
+        scene.remove(o);
+        if (o.material.map) o.material.map.dispose();
+        o.material.dispose();
+    });
+    deepSpaceObjects = [];
+
+    // 실제 천체 카탈로그 (위치는 극좌표 → 직교, 거리 단위는 scene units)
+    const catalog = [
+        // ── 나선 은하 ────────────────────────────────────────────────────
+        { tex: spiralGalaxyTex(0.3),  pos: [ 6800,  900, -4200], scale: 1200, op: 0.65 }, // M31 안드로메다
+        { tex: spiralGalaxyTex(1.1),  pos: [-7200, -600,  3100], scale:  750, op: 0.48 }, // M33 삼각형자리
+        { tex: spiralGalaxyTex(-0.5), pos: [ 4200, 2500,  7000], scale:  640, op: 0.42 }, // NGC 1300
+        { tex: spiralGalaxyTex(0.8),  pos: [-5100, 3200, -6600], scale:  580, op: 0.38 }, // M81 보데
+        { tex: spiralGalaxyTex(-1.2), pos: [ 9000, -700,  2000], scale:  520, op: 0.35 }, // M101 바람개비
+        // ── 타원 은하 ────────────────────────────────────────────────────
+        { tex: ellipticalGalaxyTex(), pos: [-5600, 1500, -6100], scale:  900, op: 0.55 }, // M87 처녀자리
+        { tex: ellipticalGalaxyTex(), pos: [ 7800, -850,  1600], scale:  520, op: 0.40 }, // M60
+        // ── 성운 ─────────────────────────────────────────────────────────
+        { tex: nebulaTex(255,60,100, 80,40,200, 255,140,30),   pos: [-4200, 2000, -5500], scale: 950, op: 0.60 }, // M42 오리온
+        { tex: nebulaTex(40,200,180, 30,80,220, 0,255,180),    pos: [ 3000,-2500, -7000], scale: 820, op: 0.55 }, // M16 독수리
+        { tex: nebulaTex(255,110,20, 200,10,60, 255,180,0),    pos: [-6500,-1800,  4000], scale: 720, op: 0.50 }, // M1 게
+        { tex: nebulaTex(160,60,255, 255,30,140, 60,120,255),  pos: [ 5600, 3600, -2100], scale: 640, op: 0.45 }, // NGC 6543 고양이눈
+        // ── 산개/구상 성단 ────────────────────────────────────────────────
+        { tex: starClusterTex(180,210,255), pos: [ 2800,-3500, -4500], scale: 540, op: 0.72 }, // M45 플레이아데스
+        { tex: starClusterTex(255,240,200), pos: [-3600, 2900,  5100], scale: 460, op: 0.62 }, // M13 헤라클레스
+        { tex: starClusterTex(200,255,220), pos: [ 6100,-2300,  3600], scale: 400, op: 0.55 }, // M22 궁수자리
+    ];
+
+    catalog.forEach(o => {
+        const mat    = new THREE.SpriteMaterial({ map: o.tex, transparent: true, opacity: o.op, depthWrite: false });
+        const sprite = new THREE.Sprite(mat);
+        sprite.position.set(...o.pos);
+        sprite.scale.set(o.scale, o.scale, 1);
+        scene.add(sprite);
+        deepSpaceObjects.push(sprite);
+    });
+}
+
 // ── 행성 초기화 ──────────────────────────────────────────────────────
 function initPlanets() {
     if (!compatibilities || !compatibilities.length) return;
@@ -438,6 +588,7 @@ function initPlanets() {
 
     initStars();
     initSolarBackground();
+    initDeepSpaceObjects();
 
     const wrapper = document.querySelector('.universe-wrapper');
     const segs    = isMobile() ? 16 : 32;
