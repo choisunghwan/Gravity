@@ -16,10 +16,10 @@ renderer.setClearColor(0x050510, 1);
 const overlayCanvas = document.getElementById('overlayCanvas');
 const overlayCtx    = overlayCanvas ? overlayCanvas.getContext('2d') : null;
 
-// 카메라 – 35° 위에서 내려다보는 뷰 + 수평 공전
-let cameraDistance = 1400;
-const CAM_MIN = 250, CAM_MAX = 4500;
-const CAMERA_TILT = 35 * Math.PI / 180;
+// 카메라 – 20° 위에서 내려다보는 뷰 (낮을수록 우주감 증가) + 수평 공전
+let cameraDistance = 1600;
+const CAM_MIN = 250, CAM_MAX = 5000;
+const CAMERA_TILT = 20 * Math.PI / 180;
 let cameraAzimuth    = 0;       // 수평 회전각 (radians)
 let rotationVelocity = 0;       // 제스처 관성
 let handPresent      = false;   // 손 감지 여부
@@ -109,21 +109,30 @@ function initSolarBackground() {
     solarBgObjects = [];
 
     // 태양
-    const sunGeom = new THREE.SphereGeometry(22, 16, 16);
-    const sunMat  = new THREE.MeshBasicMaterial({ color: 0xFFD250 });
+    const sunGeom = new THREE.SphereGeometry(50, 24, 24);
+    const sunMat  = new THREE.MeshBasicMaterial({ color: 0xFFE060 });
     const sun     = new THREE.Mesh(sunGeom, sunMat);
     sun.position.set(320, 0, -240);
     scene.add(sun);
     solarBgObjects.push(sun);
 
-    // 태양 글로우
+    // 태양 내부 글로우 (진한 주황)
     const glow = new THREE.Mesh(
-        new THREE.SphereGeometry(80, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0xFF9900, transparent: true, opacity: 0.07 })
+        new THREE.SphereGeometry(130, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xFF8800, transparent: true, opacity: 0.12 })
     );
     glow.position.copy(sun.position);
     scene.add(glow);
     solarBgObjects.push(glow);
+
+    // 태양 외부 글로우 (희미한 노랑)
+    const glow2 = new THREE.Mesh(
+        new THREE.SphereGeometry(240, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xFFDD00, transparent: true, opacity: 0.04 })
+    );
+    glow2.position.copy(sun.position);
+    scene.add(glow2);
+    solarBgObjects.push(glow2);
 
     // 궤도 링 + 장식 행성 7개
     ORBIT_RINGS.forEach(r => {
@@ -382,24 +391,36 @@ function resizeRenderer() {
     initPlanets();
 }
 
-// ── 별 파티클 ────────────────────────────────────────────────────────
-function initStars() {
-    if (starField) { scene.remove(starField); starField.geometry.dispose(); starField.material.dispose(); }
-    const count     = 200;
+// ── 별 파티클 (2레이어: 먼 작은 별 + 가까운 큰 별) ────────────────────
+let starField2 = null;
+
+function makeStarLayer(count, rMin, rMax, size, opacity) {
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
         const theta = Math.random() * Math.PI * 2;
         const phi   = Math.acos(2 * Math.random() - 1);
-        const r     = 2000 + Math.random() * 600;
+        const r     = rMin + Math.random() * (rMax - rMin);
         positions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
         positions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
         positions[i*3+2] = r * Math.cos(phi);
     }
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const mat  = new THREE.PointsMaterial({ color: 0xffffff, size: 2.5, sizeAttenuation: true, transparent: true, opacity: 0.9 });
-    starField = new THREE.Points(geom, mat);
+    const mat = new THREE.PointsMaterial({ color: 0xffffff, size, sizeAttenuation: true, transparent: true, opacity });
+    return new THREE.Points(geom, mat);
+}
+
+function initStars() {
+    if (starField)  { scene.remove(starField);  starField.geometry.dispose();  starField.material.dispose(); }
+    if (starField2) { scene.remove(starField2); starField2.geometry.dispose(); starField2.material.dispose(); }
+
+    // 먼 별: 1600개, 작고 희미하게 → 은하수 느낌
+    starField  = makeStarLayer(1600, 3000, 6000, 1.2, 0.65);
+    // 가까운 별: 400개, 크고 밝게 → 반짝이는 별
+    starField2 = makeStarLayer(400,  1800, 3000, 2.8, 0.9);
+
     scene.add(starField);
+    scene.add(starField2);
 }
 
 // ── 행성 초기화 ──────────────────────────────────────────────────────
