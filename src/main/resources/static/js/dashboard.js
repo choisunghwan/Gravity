@@ -420,12 +420,28 @@ function initPlanets() {
     const wrapper = document.querySelector('.universe-wrapper');
     const segs    = isMobile() ? 16 : 32;
 
+    // 같은 궤도 행성끼리 반지름 25px씩 벌려 겹침 방지
+    const orbitGroups = {};
+    compatibilities.forEach(c => {
+        const k = c.orbitRadius;
+        if (!orbitGroups[k]) orbitGroups[k] = [];
+        orbitGroups[k].push(c);
+    });
+    const adjustedOrbit = new Map();
+    Object.values(orbitGroups).forEach(group => {
+        const half = Math.floor(group.length / 2);
+        group.forEach((c, i) => {
+            adjustedOrbit.set(c, c.orbitRadius + (i - half) * 25);
+        });
+    });
+
     planets = compatibilities.map((c, i) => {
         const angle  = (2 * Math.PI / compatibilities.length) * i - Math.PI / 2;
         const radius = parseInt(c.planetSize) / 2;
+        const orbit  = adjustedOrbit.get(c);
 
         const group = new THREE.Group();
-        group.position.set(c.orbitRadius * Math.cos(angle), 0, c.orbitRadius * Math.sin(angle));
+        group.position.set(orbit * Math.cos(angle), 0, orbit * Math.sin(angle));
 
         // 행성 구체
         const color3 = new THREE.Color(c.planetColor);
@@ -451,7 +467,7 @@ function initPlanets() {
         const orbitPts = [];
         for (let j = 0; j <= 128; j++) {
             const a = (j / 128) * Math.PI * 2;
-            orbitPts.push(new THREE.Vector3(Math.cos(a) * c.orbitRadius, 0, Math.sin(a) * c.orbitRadius));
+            orbitPts.push(new THREE.Vector3(Math.cos(a) * orbit, 0, Math.sin(a) * orbit));
         }
         const orbitLine = new THREE.Line(
             new THREE.BufferGeometry().setFromPoints(orbitPts),
@@ -481,7 +497,7 @@ function initPlanets() {
             id: c.id, partnerId: c.partnerId, name: c.partnerName,
             rank: c.rank, score: c.score, scoreLabel: c.scoreLabel,
             color: c.planetColor, size: radius,
-            baseOrbit: c.orbitRadius, angle,
+            baseOrbit: orbit, angle,
             speed: 0.0003 + ((i * 0.00007) % 0.0002),
             x: 0, y: 0, hovered: false,
             gender: c.gender || '', emoji: c.partnerEmoji || null,
