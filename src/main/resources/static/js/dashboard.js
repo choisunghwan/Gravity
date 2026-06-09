@@ -92,13 +92,13 @@ let spaceObj3D = [];
 
 // ── 궤도 링 상수 ────────────────────────────────────────────────────
 const ORBIT_RINGS = [
-    { name: '수성',   orbit: 140,  color: '#A0A0A0', dotColor: '#B0B0B0', dotSize: 4,  angle: 0.8 },
-    { name: '금성',   orbit: 220,  color: '#C8A45A', dotColor: '#DEB87A', dotSize: 7,  angle: 2.1 },
-    { name: '화성',   orbit: 320,  color: '#C1440E', dotColor: '#E05020', dotSize: 5,  angle: 3.8 },
-    { name: '목성',   orbit: 440,  color: '#C88B3A', dotColor: '#D89B4A', dotSize: 14, angle: 1.2 },
-    { name: '토성',   orbit: 590,  color: '#EAD6B8', dotColor: '#EAD6B8', dotSize: 11, angle: 5.5, ring: true },
-    { name: '천왕성', orbit: 760,  color: '#7EC8E3', dotColor: '#8ED8F3', dotSize: 9,  angle: 4.1 },
-    { name: '해왕성', orbit: 950,  color: '#4169E1', dotColor: '#5179F1', dotSize: 8,  angle: 2.7 },
+    { name: '수성',   orbit: 140,  color: '#A0A0A0', dotColor: '#B0B0B0', dotSize: 5,  angle: 0.8 },
+    { name: '금성',   orbit: 220,  color: '#C8A45A', dotColor: '#DEB87A', dotSize: 13, angle: 2.1 },
+    { name: '화성',   orbit: 320,  color: '#C1440E', dotColor: '#E05020', dotSize: 7,  angle: 3.8 },
+    { name: '목성',   orbit: 440,  color: '#C88B3A', dotColor: '#D89B4A', dotSize: 90, angle: 1.2 },
+    { name: '토성',   orbit: 590,  color: '#EAD6B8', dotColor: '#EAD6B8', dotSize: 75, angle: 5.5, ring: true },
+    { name: '천왕성', orbit: 760,  color: '#7EC8E3', dotColor: '#8ED8F3', dotSize: 32, angle: 4.1 },
+    { name: '해왕성', orbit: 950,  color: '#4169E1', dotColor: '#5179F1', dotSize: 30, angle: 2.7 },
 ];
 
 // ── 태양계 배경 (1회 초기화) ─────────────────────────────────────────
@@ -142,13 +142,14 @@ function initSolarBackground() {
         solarBgObjects.push(line);
 
         // 장식 행성 구체
-        const dSize  = r.dotSize * 0.6;
+        const dSize  = r.dotSize;
+        const segs   = dSize >= 30 ? 24 : 10;
         const dColor = new THREE.Color(r.dotColor);
         const dot = new THREE.Mesh(
-            new THREE.SphereGeometry(dSize, 8, 8),
+            new THREE.SphereGeometry(dSize, segs, segs),
             new THREE.MeshStandardMaterial({
-                color: dColor, emissive: dColor, emissiveIntensity: 0.3,
-                transparent: true, opacity: 0.35
+                color: dColor, emissive: dColor, emissiveIntensity: 0.25,
+                transparent: true, opacity: dSize >= 30 ? 0.45 : 0.5
             })
         );
         dot.position.set(Math.cos(r.angle) * r.orbit, 0, Math.sin(r.angle) * r.orbit);
