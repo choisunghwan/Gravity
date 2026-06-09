@@ -1387,6 +1387,9 @@ function setSheetTab(tab, expand = true) {
 function drawWeeklyChart(counts) {
     const cvs = document.getElementById('weeklyChartCanvas');
     if (!cvs) return;
+    // CSS 표시 크기에 내부 해상도를 맞춤 (width:100% 늘림 대응)
+    cvs.width  = cvs.offsetWidth  || 260;
+    cvs.height = cvs.offsetHeight || 80;
     const c  = cvs.getContext('2d');
     const W  = cvs.width, H = cvs.height;
     c.clearRect(0, 0, W, H);
