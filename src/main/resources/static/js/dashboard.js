@@ -2016,9 +2016,17 @@ function stopVoiceAssistant() {
 
 function handleVoiceInput(text) {
     const t = text.toLowerCase();
+    if (voiceSpeaking) return;  // TTS 출력 중에는 마이크 입력 무시
     if (!voiceActive) {
-        if (t.includes('그래비티') || t.includes('gravity') || t.includes('그래 비티')) {
+        const wakeWords = ['그래비티', 'gravity', '그래 비티'];
+        const wakeWord = wakeWords.find(w => t.includes(w));
+        if (wakeWord) {
             activateVoiceMode();
+            // "그래비티 방문자 있냐" 처럼 웨이크워드 + 질문을 한 번에 말한 경우
+            const afterWake = text.slice(t.indexOf(wakeWord) + wakeWord.length).trim();
+            if (afterWake.length > 1) {
+                setTimeout(() => processVoiceCommand(afterWake.toLowerCase()), 1500);
+            }
         }
         return;
     }
@@ -2036,7 +2044,7 @@ function activateVoiceMode() {
     if (btn) { btn.classList.add('voice-on'); btn.classList.remove('voice-listening'); }
     document.getElementById('voiceStatusText').textContent = '명령을 말씀하세요...';
     speak('네, 그래비티입니다. 무엇을 도와드릴까요?');
-    voiceDeactivateTimer = setTimeout(deactivateVoiceMode, 5000);
+    voiceDeactivateTimer = setTimeout(deactivateVoiceMode, 10000);
 }
 
 function deactivateVoiceMode() {
@@ -2095,7 +2103,7 @@ function processVoiceCommand(t) {
         voiceDeactivateTimer = setTimeout(deactivateVoiceMode, 3000);
     } else {
         // 키워드 미매칭 → Claude AI에게 질문
-        askGravityAI(text);
+        askGravityAI(t);
     }
 }
 
@@ -2136,13 +2144,18 @@ function spawnVoiceWaveSet() {
     }
 }
 
+let voiceSpeaking = false;
 function speak(text) {
     if (!window.speechSynthesis) return;
     const utt = new SpeechSynthesisUtterance(text);
     utt.lang  = 'ko-KR';
     utt.rate  = 1.1;
     utt.pitch = 1.0;
+    utt.onstart = () => { voiceSpeaking = true; };
+    utt.onend   = () => { voiceSpeaking = false; };
+    utt.onerror = () => { voiceSpeaking = false; };
     speechSynthesis.cancel();
+    voiceSpeaking = true;
     speechSynthesis.speak(utt);
 }
 
