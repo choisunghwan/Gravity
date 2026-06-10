@@ -2123,12 +2123,28 @@ function speak(text) {
 window.toggleVoiceAssistant = toggleVoiceAssistant;
 
 // ── 음성 자막 · 실시간 번역 ────────────────────────────────────────────
-let subtitleRecog   = null;
-let subtitleOn      = false;
-let subtitleFadeTimer = null;
+let subtitleRecog      = null;
+let subtitleOn         = false;
+let subtitleFadeTimer  = null;
+let subtitleTransTimer = null;   // 번역 디바운스
+let subtitleAbort      = null;   // 진행 중인 번역 취소용
 
 function toggleSubtitle() {
     subtitleOn ? stopSubtitle() : startSubtitle();
+}
+
+function setSubtitleBtnActive(on) {
+    const btn = document.getElementById('subtitleBtn');
+    if (!btn) return;
+    if (on) {
+        btn.innerHTML = '🔴';
+        btn.style.cssText += 'animation:subtitlePulse 1s infinite;color:#EF4444;box-shadow:0 0 12px rgba(239,68,68,0.7);';
+    } else {
+        btn.innerHTML = '🗣️';
+        btn.style.animation = '';
+        btn.style.color = '';
+        btn.style.boxShadow = '';
+    }
 }
 
 function startSubtitle() {
@@ -2148,7 +2164,13 @@ function startSubtitle() {
         }
         const spoken = final || interim;
         if (spoken) showSubtitleKo(spoken);
-        if (final)  translateAndShow(final.trim());
+
+        // 실시간 번역: 500ms 디바운스 (말 중간에 계속 호출 방지)
+        clearTimeout(subtitleTransTimer);
+        if (subtitleAbort) subtitleAbort.abort();
+        subtitleTransTimer = setTimeout(() => {
+            translateAndShow(spoken.trim());
+        }, 500);
     };
 
     subtitleRecog.onerror = () => stopSubtitle();
@@ -2156,17 +2178,18 @@ function startSubtitle() {
 
     subtitleRecog.start();
     subtitleOn = true;
-    const btn = document.getElementById('subtitleBtn');
-    if (btn) { btn.style.color = '#A855F7'; btn.style.textShadow = '0 0 8px #A855F7'; }
-    showToast('🗣️ 자막 켜짐 — 말해보세요');
+    setSubtitleBtnActive(true);
+    showToast('🔴 자막 ON — 말해보세요');
 }
 
 function stopSubtitle() {
     if (subtitleRecog) subtitleRecog.stop();
+    clearTimeout(subtitleTransTimer);
+    if (subtitleAbort) subtitleAbort.abort();
     subtitleOn = false;
-    const btn = document.getElementById('subtitleBtn');
-    if (btn) { btn.style.color = ''; btn.style.textShadow = ''; }
+    setSubtitleBtnActive(false);
     hideSubtitles();
+    showToast('자막 OFF');
 }
 
 function showSubtitleKo(text) {
@@ -2180,11 +2203,13 @@ function showSubtitleKo(text) {
 
 async function translateAndShow(text) {
     if (!text) return;
+    subtitleAbort = new AbortController();
     try {
         const r    = await fetch('/api/translate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
+            body: JSON.stringify({ text }),
+            signal: subtitleAbort.signal
         });
         const data = await r.json();
         const el   = document.getElementById('subtitleEn');
@@ -2200,5 +2225,12 @@ function hideSubtitles() {
     if (ko) ko.style.opacity = '0';
     if (en) en.style.opacity = '0';
 }
+
+// 버튼 맥박 애니메이션 CSS 동적 삽입
+(function() {
+    const s = document.createElement('style');
+    s.textContent = '@keyframes subtitlePulse{0%,100%{opacity:1}50%{opacity:0.5}}';
+    document.head.appendChild(s);
+})();
 
 window.toggleSubtitle = toggleSubtitle;
