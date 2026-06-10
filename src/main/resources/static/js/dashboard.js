@@ -97,7 +97,7 @@ const ORBIT_RINGS = [
     { name: '금성',   orbit: 220,  color: '#C8A45A', dotColor: '#DEB87A', dotSize: 13, angle: 2.1 },
     { name: '화성',   orbit: 320,  color: '#C1440E', dotColor: '#E05020', dotSize: 7,  angle: 3.8 },
     { name: '목성',   orbit: 440,  color: '#C88B3A', dotColor: '#D89B4A', dotSize: 90, angle: 1.2 },
-    { name: '토성',   orbit: 590,  color: '#EAD6B8', dotColor: '#EAD6B8', dotSize: 75, angle: 5.5, ring: true },
+    { name: '토성',   orbit: 590,  color: '#EAD6B8', dotColor: '#EAD6B8', dotSize: 75, angle: 2.0, ring: true },
     { name: '천왕성', orbit: 760,  color: '#7EC8E3', dotColor: '#8ED8F3', dotSize: 32, angle: 4.1 },
     { name: '해왕성', orbit: 950,  color: '#4169E1', dotColor: '#5179F1', dotSize: 30, angle: 2.7 },
 ];
