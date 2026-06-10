@@ -67,17 +67,6 @@
                  class="center-status" th:text="${currentUser.statusMessage}"></div>
         </div>
 
-        <!-- 범례 -->
-        <div class="legend">
-            <div class="legend-title">궤도 기준</div>
-            <div class="legend-item"><span class="legend-planet">☿</span> 수성 <span class="legend-score">90점↑</span></div>
-            <div class="legend-item"><span class="legend-planet">♀</span> 금성 <span class="legend-score">77점↑</span></div>
-            <div class="legend-item"><span class="legend-planet">♂</span> 화성 <span class="legend-score">63점↑</span></div>
-            <div class="legend-item"><span class="legend-planet">♃</span> 목성 <span class="legend-score">49점↑</span></div>
-            <div class="legend-item"><span class="legend-planet">♄</span> 토성 <span class="legend-score">35점↑</span></div>
-            <div class="legend-item"><span class="legend-planet">⛢</span> 천왕성 <span class="legend-score">20점↑</span></div>
-            <div class="legend-item"><span class="legend-planet">♆</span> 해왕성 <span class="legend-score">~19점</span></div>
-        </div>
 
         <!-- 줌 컨트롤 -->
         <div class="zoom-controls">
@@ -218,7 +207,7 @@
     const currentUserColor = /*[[${currentUser.planetColor ?: '#4FC3F7'}]]*/ '#4FC3F7';
     const currentUserStatus = /*[[${currentUser.statusMessage}]]*/ null;
 </script>
-<script th:src="@{/js/dashboard.js(v='30')}"></script>
+<script th:src="@{/js/dashboard.js(v='31')}"></script>
 <th:block th:replace="~{fragments/bottom-nav :: bottom-nav('dashboard')}"></th:block>
 </body>
 </html>
