@@ -35,13 +35,13 @@ public class CompatibilityResultDto {
     // 가중합 20 = 중립 (궤도 불변), 초과 = 당겨짐, 미달 = 밀려남
     public double getOrbitRadius() {
         double base;
-        if (score >= 90) base = 140;
-        else if (score >= 77) base = 220;
-        else if (score >= 63) base = 320;
-        else if (score >= 49) base = 440;
-        else if (score >= 35) base = 590;
-        else if (score >= 20) base = 760;
-        else base = 950;
+        if (score >= 90) base =  140;
+        else if (score >= 77) base =  240;
+        else if (score >= 63) base =  360;
+        else if (score >= 49) base =  700;
+        else if (score >= 35) base = 1050;
+        else if (score >= 20) base = 1500;
+        else base = 2000;
 
         double neutral = 20.0;
         double delta   = chatBonus - neutral;

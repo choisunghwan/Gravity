@@ -18,7 +18,7 @@ const overlayCtx    = overlayCanvas ? overlayCanvas.getContext('2d') : null;
 
 // 카메라 – 20° 위에서 내려다보는 뷰 (낮을수록 우주감 증가) + 수평 공전
 let cameraDistance = 1600;
-const CAM_MIN = 250, CAM_MAX = 5000;
+const CAM_MIN = 250, CAM_MAX = 8000;
 const CAMERA_TILT = 20 * Math.PI / 180;
 let cameraAzimuth    = 0;       // 수평 회전각 (radians)
 let rotationVelocity = 0;       // 제스처 관성
@@ -93,13 +93,13 @@ let deepSpaceObjects = [];
 
 // ── 궤도 링 상수 ────────────────────────────────────────────────────
 const ORBIT_RINGS = [
-    { name: '수성',   orbit: 140,  color: '#A0A0A0', dotColor: '#B0B0B0', dotSize: 5,  angle: 0.8 },
-    { name: '금성',   orbit: 220,  color: '#C8A45A', dotColor: '#DEB87A', dotSize: 13, angle: 2.1 },
-    { name: '화성',   orbit: 320,  color: '#C1440E', dotColor: '#E05020', dotSize: 7,  angle: 3.8 },
-    { name: '목성',   orbit: 440,  color: '#C88B3A', dotColor: '#D89B4A', dotSize: 90, angle: 1.2 },
-    { name: '토성',   orbit: 590,  color: '#EAD6B8', dotColor: '#EAD6B8', dotSize: 75, angle: 2.0, ring: true },
-    { name: '천왕성', orbit: 760,  color: '#7EC8E3', dotColor: '#8ED8F3', dotSize: 32, angle: 4.1 },
-    { name: '해왕성', orbit: 950,  color: '#4169E1', dotColor: '#5179F1', dotSize: 30, angle: 2.7 },
+    { name: '수성',   orbit:  140, color: '#A0A0A0', dotColor: '#B0B0B0', dotSize:  5, angle: 0.8 },
+    { name: '금성',   orbit:  240, color: '#C8A45A', dotColor: '#DEB87A', dotSize: 13, angle: 2.1 },
+    { name: '화성',   orbit:  360, color: '#C1440E', dotColor: '#E05020', dotSize:  7, angle: 3.8 },
+    { name: '목성',   orbit:  700, color: '#C88B3A', dotColor: '#D89B4A', dotSize: 90, angle: 1.2 },
+    { name: '토성',   orbit: 1050, color: '#EAD6B8', dotColor: '#EAD6B8', dotSize: 75, angle: 2.0, ring: true },
+    { name: '천왕성', orbit: 1500, color: '#7EC8E3', dotColor: '#8ED8F3', dotSize: 32, angle: 4.1 },
+    { name: '해왕성', orbit: 2000, color: '#4169E1', dotColor: '#5179F1', dotSize: 30, angle: 2.7 },
 ];
 
 // ── 태양계 배경 (1회 초기화) ─────────────────────────────────────────
