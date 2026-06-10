@@ -1153,7 +1153,7 @@ function loadMessages() {
             box.innerHTML = '';
             msgs.forEach(m => appendMessage(m, false));
             box.scrollTop = box.scrollHeight;
-            if (msgs.length > 0) lastMessageTime = msgs[msgs.length - 1].createdAtIso || nowKST();
+            lastMessageTime = nowKST(); // 내역 로드 후엔 지금 시각으로 초기화 → 폴링이 과거 메시지를 새 메시지로 오인하는 버그 방지
         });
 }
 
