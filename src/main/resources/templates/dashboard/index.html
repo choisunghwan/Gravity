@@ -73,8 +73,21 @@
             <button id="zoomIn"    class="zoom-btn">＋</button>
             <button id="zoomReset" class="zoom-btn">⟳</button>
             <button id="zoomOut"   class="zoom-btn">－</button>
-            <button id="gestureBtn" class="zoom-btn gesture-btn" onclick="toggleGestureControl()" title="손 제스처 회전·줌">📷</button>
-            <button id="voiceBtn"  class="zoom-btn voice-btn"   onclick="toggleVoiceAssistant()" title="음성 어시스턴트 (그래비티)">🎤</button>
+            <button id="gestureBtn"  class="zoom-btn gesture-btn" onclick="toggleGestureControl()" title="손 제스처 회전·줌">📷</button>
+            <button id="voiceBtn"    class="zoom-btn voice-btn"   onclick="toggleVoiceAssistant()" title="음성 어시스턴트 (그래비티)">🎤</button>
+            <button id="subtitleBtn" class="zoom-btn"             onclick="toggleSubtitle()"       title="음성 자막 · 번역">🗣️</button>
+        </div>
+
+        <!-- 음성 자막 오버레이 -->
+        <div id="subtitleOverlay" style="position:absolute;bottom:90px;left:0;right:0;text-align:center;pointer-events:none;z-index:15;padding:0 20px;">
+            <div id="subtitleEn"
+                 style="font-size:clamp(28px,5vw,52px);font-weight:800;color:#fff;
+                        text-shadow:0 0 30px #A855F7,0 0 60px #7C3AED,0 2px 8px rgba(0,0,0,0.8);
+                        opacity:0;transition:opacity 0.3s;letter-spacing:0.02em;line-height:1.2;
+                        word-break:break-word;"></div>
+            <div id="subtitleKo"
+                 style="font-size:clamp(14px,2.2vw,20px);color:rgba(255,255,255,0.75);margin-top:8px;
+                        text-shadow:0 1px 6px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.3s;"></div>
         </div>
 
     </div>
@@ -207,7 +220,7 @@
     const currentUserColor = /*[[${currentUser.planetColor ?: '#4FC3F7'}]]*/ '#4FC3F7';
     const currentUserStatus = /*[[${currentUser.statusMessage}]]*/ null;
 </script>
-<script th:src="@{/js/dashboard.js(v='31')}"></script>
+<script th:src="@{/js/dashboard.js(v='32')}"></script>
 <th:block th:replace="~{fragments/bottom-nav :: bottom-nav('dashboard')}"></th:block>
 </body>
 </html>

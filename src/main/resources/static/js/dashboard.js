@@ -2121,3 +2121,84 @@ function speak(text) {
 }
 
 window.toggleVoiceAssistant = toggleVoiceAssistant;
+
+// ── 음성 자막 · 실시간 번역 ────────────────────────────────────────────
+let subtitleRecog   = null;
+let subtitleOn      = false;
+let subtitleFadeTimer = null;
+
+function toggleSubtitle() {
+    subtitleOn ? stopSubtitle() : startSubtitle();
+}
+
+function startSubtitle() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { showToast('이 브라우저는 음성 인식을 지원하지 않아요 (Chrome 권장)'); return; }
+
+    subtitleRecog = new SR();
+    subtitleRecog.lang = 'ko-KR';
+    subtitleRecog.continuous = true;
+    subtitleRecog.interimResults = true;
+
+    subtitleRecog.onresult = e => {
+        let interim = '', final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) final += e.results[i][0].transcript;
+            else interim += e.results[i][0].transcript;
+        }
+        const spoken = final || interim;
+        if (spoken) showSubtitleKo(spoken);
+        if (final)  translateAndShow(final.trim());
+    };
+
+    subtitleRecog.onerror = () => stopSubtitle();
+    subtitleRecog.onend   = () => { if (subtitleOn) subtitleRecog.start(); };
+
+    subtitleRecog.start();
+    subtitleOn = true;
+    const btn = document.getElementById('subtitleBtn');
+    if (btn) { btn.style.color = '#A855F7'; btn.style.textShadow = '0 0 8px #A855F7'; }
+    showToast('🗣️ 자막 켜짐 — 말해보세요');
+}
+
+function stopSubtitle() {
+    if (subtitleRecog) subtitleRecog.stop();
+    subtitleOn = false;
+    const btn = document.getElementById('subtitleBtn');
+    if (btn) { btn.style.color = ''; btn.style.textShadow = ''; }
+    hideSubtitles();
+}
+
+function showSubtitleKo(text) {
+    const el = document.getElementById('subtitleKo');
+    if (!el) return;
+    el.textContent = text;
+    el.style.opacity = '1';
+    clearTimeout(subtitleFadeTimer);
+    subtitleFadeTimer = setTimeout(hideSubtitles, 5000);
+}
+
+async function translateAndShow(text) {
+    if (!text) return;
+    try {
+        const r    = await fetch('/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        const data = await r.json();
+        const el   = document.getElementById('subtitleEn');
+        if (!el) return;
+        el.textContent = data.translated || text;
+        el.style.opacity = '1';
+    } catch (e) {}
+}
+
+function hideSubtitles() {
+    const ko = document.getElementById('subtitleKo');
+    const en = document.getElementById('subtitleEn');
+    if (ko) ko.style.opacity = '0';
+    if (en) en.style.opacity = '0';
+}
+
+window.toggleSubtitle = toggleSubtitle;

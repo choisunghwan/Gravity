@@ -73,6 +73,40 @@ public class ClaudeService {
         return generateLocalAnalysis(user, partner, totalScore, zodiacScore, numerologyScore, elementScore);
     }
 
+    public String translateToEnglish(String text) {
+        try {
+            WebClient webClient = WebClient.builder()
+                    .baseUrl(apiUrl)
+                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .defaultHeader("x-api-key", apiKey)
+                    .defaultHeader("anthropic-version", "2023-06-01")
+                    .build();
+
+            Map<String, Object> requestBody = Map.of(
+                    "model", model,
+                    "max_tokens", 200,
+                    "messages", List.of(Map.of("role", "user", "content",
+                            "Translate to English. Return ONLY the translation, no explanation:\n" + text))
+            );
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = webClient.post()
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (response != null && response.containsKey("content")) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> contents = (List<Map<String, Object>>) response.get("content");
+                if (!contents.isEmpty()) return (String) contents.get(0).get("text");
+            }
+        } catch (Exception e) {
+            log.warn("번역 실패: {}", e.getMessage());
+        }
+        return text;
+    }
+
     private String buildPrompt(User user, User partner, int totalScore,
                                 int zodiacScore, int numerologyScore, int elementScore) {
         return String.format("""
