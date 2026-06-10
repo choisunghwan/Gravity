@@ -129,6 +129,31 @@ public class CompatibilityService {
                 .collect(Collectors.toList());
     }
 
+    // 마이페이지용: Claude AI 호출 없이 기본 정보만 반환
+    public List<CompatibilityResultDto> getAllCompatibilitiesSimple(User user) {
+        List<CompatibilityResultDto> list = compatibilityResultRepository.findAllByUserOrPartner(user)
+                .stream()
+                .map(cr -> {
+                    if (cr.getUser().getId().equals(user.getId())) {
+                        return CompatibilityResultDto.from(cr);
+                    } else {
+                        CompatibilityResultDto dto = new CompatibilityResultDto();
+                        dto.setId(cr.getId());
+                        dto.setPartnerId(cr.getUser().getId());
+                        dto.setPartnerName(cr.getUser().getName());
+                        dto.setPartnerPlanetEmoji(cr.getUser().getPlanetEmoji());
+                        dto.setPartnerPlanetColor(cr.getUser().getPlanetColor());
+                        dto.setScore(cr.getScore());
+                        dto.setCreatedAt(cr.getCreatedAt().toLocalDate().toString());
+                        return dto;
+                    }
+                })
+                .sorted((a, b) -> Integer.compare(b.getScore(), a.getScore()))
+                .collect(Collectors.toList());
+        for (int i = 0; i < list.size(); i++) list.get(i).setRank(i + 1);
+        return list;
+    }
+
     public Optional<CompatibilityResult> findByOrderId(String orderId) {
         return compatibilityResultRepository.findByOrderId(orderId);
     }

@@ -88,29 +88,6 @@
             <button id="voiceBtn"  class="zoom-btn voice-btn"   onclick="toggleVoiceAssistant()" title="음성 어시스턴트 (그래비티)">🎤</button>
         </div>
 
-        <!-- 점수 목록 -->
-        <div class="score-list" id="scoreList">
-            <div class="drawer-handle" id="drawerToggle">▲ 목록</div>
-            <div class="score-list-header" onclick="toggleScoreList()">
-                <h3>내 우주</h3>
-                <button class="score-list-toggle" id="scoreListToggle">∧</button>
-            </div>
-            <div class="score-list-items">
-            <div th:each="c : ${compatibilities}" class="score-item"
-                 th:data-id="${c.id}" th:onclick="'showDetail(' + ${c.id} + ')'">
-                <div class="score-avatar" th:style="'background:' + ${c.planetColor}">
-                    <span th:text="${c.rank + '위'}">순위</span>
-                </div>
-                <div class="score-info">
-                    <div class="score-name" th:text="${c.partnerName}">이름</div>
-                    <div class="score-bar-wrap">
-                        <div class="score-bar" th:style="'width:' + ${c.score} + '%'"></div>
-                    </div>
-                </div>
-                <div class="score-num" th:text="${c.score} + '점'">0점</div>
-            </div>
-            </div><!-- score-list-items end -->
-        </div>
     </div>
 </div>
 
@@ -241,7 +218,7 @@
     const currentUserColor = /*[[${currentUser.planetColor ?: '#4FC3F7'}]]*/ '#4FC3F7';
     const currentUserStatus = /*[[${currentUser.statusMessage}]]*/ null;
 </script>
-<script th:src="@{/js/dashboard.js(v='29')}"></script>
+<script th:src="@{/js/dashboard.js(v='30')}"></script>
 <th:block th:replace="~{fragments/bottom-nav :: bottom-nav('dashboard')}"></th:block>
 </body>
 </html>

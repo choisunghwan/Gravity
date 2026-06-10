@@ -2,6 +2,7 @@ package com.gravity.controller;
 
 import com.gravity.dto.UserUpdateDto;
 import com.gravity.entity.User;
+import com.gravity.service.CompatibilityService;
 import com.gravity.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class MyPageController {
 
     private final UserService userService;
+    private final CompatibilityService compatibilityService;
 
     @GetMapping
     public String myPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
@@ -35,6 +37,7 @@ public class MyPageController {
         updateDto.setPlanetColor(user.getPlanetColor());
         updateDto.setStatusMessage(user.getStatusMessage());
         model.addAttribute("updateDto", updateDto);
+        model.addAttribute("compatibilities", compatibilityService.getAllCompatibilitiesSimple(user));
         return "mypage/index";
     }
 

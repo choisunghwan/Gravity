@@ -147,6 +147,36 @@
 
         </form>
 
+        <!-- 내 우주 현황 -->
+        <div th:if="${!compatibilities.empty}" style="margin-top:32px;">
+            <h3 style="color:#E2E8F0;font-size:16px;font-weight:700;margin-bottom:16px;">🌌 내 우주 현황</h3>
+            <div th:each="c : ${compatibilities}"
+                 style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <!-- 순위 -->
+                <div style="width:24px;text-align:center;font-size:13px;font-weight:700;color:#64748B;"
+                     th:text="${c.rank}">1</div>
+                <!-- 행성 -->
+                <div style="width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;"
+                     th:style="'width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:' + ${c.planetColor} + '33;border:2px solid ' + ${c.planetColor} + '88;'"
+                     th:text="${c.partnerPlanetEmoji ?: '🪐'}">🪐</div>
+                <!-- 이름 + 궤도 -->
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:14px;font-weight:600;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                         th:text="${c.partnerName}">이름</div>
+                    <div style="font-size:11px;color:#64748B;margin-top:2px;"
+                         th:text="${c.orbitPlanetName + ' 궤도'}">궤도</div>
+                </div>
+                <!-- 점수 바 -->
+                <div style="width:70px;">
+                    <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+                        <div th:style="'height:100%;border-radius:2px;background:' + ${c.planetColor} + ';width:' + ${c.score} + '%'"></div>
+                    </div>
+                    <div style="font-size:12px;font-weight:700;color:#A855F7;text-align:right;margin-top:3px;"
+                         th:text="${c.score + '점'}">0점</div>
+                </div>
+            </div>
+        </div>
+
         <a th:href="@{/dashboard}" class="btn-back">← 대시보드로</a>
 
         <!-- 로그아웃 (모바일에서 상단 nav 숨겨지므로 여기서 제공) -->
