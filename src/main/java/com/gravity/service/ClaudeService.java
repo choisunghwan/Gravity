@@ -73,6 +73,57 @@ public class ClaudeService {
         return generateLocalAnalysis(user, partner, totalScore, zodiacScore, numerologyScore, elementScore);
     }
 
+    public String askGravityAI(String userName, String planetsInfo, String question) {
+        String prompt = String.format("""
+                당신은 '그래비티' AI 어시스턴트입니다. 사용자의 우주(관계 네트워크)를 관리하는 친근한 AI예요.
+
+                [사용자 정보]
+                이름: %s
+
+                [연결된 행성들 (친구/지인)]
+                %s
+
+                위 데이터를 바탕으로 사용자 질문에 답해주세요.
+                - 2~3문장으로 간결하게 (TTS로 읽을 거라 너무 길면 안 됨)
+                - 친근하고 따뜻한 말투
+                - 우주/행성 비유 자연스럽게 사용 가능
+                - 한국어로 답변
+
+                질문: %s
+                """, userName, planetsInfo.isBlank() ? "연결된 행성 없음" : planetsInfo, question);
+
+        try {
+            WebClient webClient = WebClient.builder()
+                    .baseUrl(apiUrl)
+                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .defaultHeader("x-api-key", apiKey)
+                    .defaultHeader("anthropic-version", "2023-06-01")
+                    .build();
+
+            Map<String, Object> requestBody = Map.of(
+                    "model", model,
+                    "max_tokens", 300,
+                    "messages", List.of(Map.of("role", "user", "content", prompt))
+            );
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = webClient.post()
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (response != null && response.containsKey("content")) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> contents = (List<Map<String, Object>>) response.get("content");
+                if (!contents.isEmpty()) return (String) contents.get(0).get("text");
+            }
+        } catch (Exception e) {
+            log.warn("그래비티 AI 호출 실패: {}", e.getMessage());
+        }
+        return "죄송해요, 지금은 답변하기 어려워요.";
+    }
+
     public String translateToEnglish(String text) {
         try {
             WebClient webClient = WebClient.builder()

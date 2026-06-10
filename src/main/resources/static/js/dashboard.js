@@ -2090,8 +2090,34 @@ function processVoiceCommand(t) {
         replied = true;
     }
 
-    if (replied) spawnVoiceWaveSet();
-    voiceDeactivateTimer = setTimeout(deactivateVoiceMode, 3000);
+    if (replied) {
+        spawnVoiceWaveSet();
+        voiceDeactivateTimer = setTimeout(deactivateVoiceMode, 3000);
+    } else {
+        // 키워드 미매칭 → Claude AI에게 질문
+        askGravityAI(text);
+    }
+}
+
+async function askGravityAI(question) {
+    document.getElementById('voiceStatusText').textContent = '생각 중...';
+    spawnVoiceWaveSet();
+    try {
+        const r    = await fetch('/api/gravity-ai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+        });
+        const data = await r.json();
+        const answer = data.answer || '죄송해요, 잘 모르겠어요.';
+        speak(answer);
+        // 자막으로도 표시
+        const el = document.getElementById('subtitleKo');
+        if (el) { el.textContent = answer; el.style.opacity = '1'; setTimeout(() => { el.style.opacity = '0'; }, 8000); }
+    } catch (e) {
+        speak('죄송해요, 연결에 문제가 있어요.');
+    }
+    voiceDeactivateTimer = setTimeout(deactivateVoiceMode, 8000);
 }
 
 function highlightOnlinePlanets(online) {
