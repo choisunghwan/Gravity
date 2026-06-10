@@ -720,8 +720,16 @@ function render() {
         const cur = p.sphere.scale.x;
         p.sphere.scale.setScalar(cur + (p._scaleTarget - cur) * 0.15);
 
-        // 온라인 링
-        p.onRing.material.opacity = onlinePartnerIds.has(Number(p.partnerId)) ? 0.8 : 0;
+        // 온라인 링 + 구체 글로우 맥박
+        const isOnline = onlinePartnerIds.has(Number(p.partnerId));
+        if (isOnline) {
+            const pulse = 0.5 + 0.5 * Math.sin(Date.now() * 0.0025 + p.partnerId);
+            p.onRing.material.opacity = 0.55 + pulse * 0.45;
+            p.sphere.material.emissiveIntensity = 0.35 + pulse * 0.45;
+        } else {
+            p.onRing.material.opacity = 0;
+            p.sphere.material.emissiveIntensity = 0.2;
+        }
 
         // 화면 좌표 계산 (이모지·말풍선·수퍼노바가 p.x/p.y 사용)
         const vec = p.group.position.clone().project(camera);
@@ -881,7 +889,7 @@ canvas.addEventListener('click', e => {
     const hit = raycaster.intersectObjects(planetSpheres);
     if (hit.length) {
         const p = planets.find(p => p.sphere === hit[0].object);
-        if (p) showDetail(p.id);
+        if (p) openChatFromPlanet(p);
     }
 });
 
@@ -934,7 +942,7 @@ canvas.addEventListener('touchend', e => {
         const hit = raycaster.intersectObjects(planetSpheres);
         if (hit.length) {
             const p = planets.find(p => p.sphere === hit[0].object);
-            if (p) showDetail(p.id);
+            if (p) openChatFromPlanet(p);
         }
     }
 });
@@ -1089,6 +1097,28 @@ function toggleChat() {
     body.style.display = chatOpen ? 'flex' : 'none';
     btn.textContent    = chatOpen ? '∨' : '∧';
     if (chatOpen) { unreadCount = 0; updateBadge(); }
+}
+
+let _chatCompatId = null;  // ℹ️ 버튼용 현재 채팅 상대 궁합 id
+
+function openChatFromPlanet(p) {
+    // 채팅 패널 열기
+    if (!isMobile() && !chatOpen) {
+        chatOpen = true;
+        document.getElementById('chatBody').style.display = 'flex';
+        document.getElementById('chatToggleBtn').textContent = '∨';
+    }
+    // 헤더 채우기
+    const planetEl = document.getElementById('chatRoomPlanet');
+    const scoreEl  = document.getElementById('chatRoomScore');
+    if (planetEl) planetEl.textContent = p.emoji || '🪐';
+    if (scoreEl)  { scoreEl.textContent = p.score + '점'; scoreEl.style.color = p.color || '#A855F7'; }
+    _chatCompatId = p.id;
+    openChat(p.partnerId, p.name);
+}
+
+function showDetailFromChat() {
+    if (_chatCompatId) showDetail(_chatCompatId);
 }
 
 function openChat(partnerId, partnerName) {
@@ -1629,10 +1659,12 @@ function drawWeeklyChart(counts) {
 }
 
 // 전역 노출
-window.toggleChat      = toggleChat;
-window.openChat        = openChat;
-window.backToPartners  = backToPartners;
-window.sendChatMessage = sendChatMessage;
+window.toggleChat        = toggleChat;
+window.openChat          = openChat;
+window.openChatFromPlanet = openChatFromPlanet;
+window.showDetailFromChat = showDetailFromChat;
+window.backToPartners    = backToPartners;
+window.sendChatMessage   = sendChatMessage;
 
 // 모바일 키보드가 올라올 때 채팅 패널 위로 올리기
 if (window.visualViewport) {
