@@ -593,25 +593,26 @@ function initPlanets() {
     const wrapper = document.querySelector('.universe-wrapper');
     const segs    = isMobile() ? 16 : 32;
 
-    // 같은 궤도 행성끼리 반지름 25px씩 벌려 겹침 방지
+    // 같은 궤도 그룹별로 360도 균등 배분 → 몇 명이든 절대 겹치지 않음
     const orbitGroups = {};
     compatibilities.forEach(c => {
-        const k = c.orbitRadius;
+        const k = Math.round(c.orbitRadius);
         if (!orbitGroups[k]) orbitGroups[k] = [];
         orbitGroups[k].push(c);
     });
-    const adjustedOrbit = new Map();
-    Object.values(orbitGroups).forEach(group => {
-        const half = Math.floor(group.length / 2);
+    const planetAngles = new Map();
+    Object.entries(orbitGroups).forEach(([key, group]) => {
+        // 궤도마다 황금비 기반 시작 각도 (궤도별로 다른 시작점, 새로고침해도 동일)
+        const baseAngle = (parseFloat(key) * 2.399963) % (Math.PI * 2);
         group.forEach((c, i) => {
-            adjustedOrbit.set(c, c.orbitRadius + (i - half) * 25);
+            planetAngles.set(c, baseAngle + (Math.PI * 2 / group.length) * i);
         });
     });
 
     planets = compatibilities.map((c, i) => {
-        const angle  = (2 * Math.PI / compatibilities.length) * i - Math.PI / 2;
+        const angle  = planetAngles.get(c);
         const radius = parseInt(c.planetSize) / 2;
-        const orbit  = adjustedOrbit.get(c);
+        const orbit  = c.orbitRadius;
 
         const group = new THREE.Group();
         group.position.set(orbit * Math.cos(angle), 0, orbit * Math.sin(angle));
